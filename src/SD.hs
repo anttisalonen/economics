@@ -42,7 +42,7 @@ isValidDemand c =
 
 isValidSupply :: (Curve a) => a -> Bool
 isValidSupply c =
-  priceAtAmount c 0 < 0 && amountAtPrice c 0 > 0 && b (toLine c) >= 0
+  priceAtAmount c 0 < 0 && b (toLine c) >= 0
 
 priceElasticity :: (Curve a) => a -> Flt -> Elasticity
 priceElasticity c q =
