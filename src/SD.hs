@@ -1,6 +1,7 @@
 module SD
 where
 
+import Data.Maybe
 import Test.QuickCheck
 
 import Math
@@ -52,6 +53,16 @@ priceAtAmount = invLineFunc . toLine
 
 amountAtPrice :: (Curve a) => a -> Flt -> Flt
 amountAtPrice = lineFunc . toLine
+
+balance :: Supply -> Demand -> Maybe Point2
+balance s d = 
+  let a' = a $ toLine s
+      b' = b $ toLine s
+      c' = a $ toLine d
+      d' = b $ toLine d
+      q = (a' - c') / (d' - b')
+      p = a' + b' * q
+  in if q > 0 && p > 0 then Just (q, p) else Nothing
 
 instance Arbitrary Supply where
   arbitrary = do
@@ -116,4 +127,8 @@ prop_elasticity2 s q = q > 0 ==>
       b2 = b (toLine s')
   in e < 0 ==> diffTolerance a1 a2 0.00001 &&
                diffTolerance b1 b2 0.00001
+
+prop_balance :: Supply -> Demand -> Property
+prop_balance s d = 
+  priceAtAmount s 0 < priceAtAmount d 0 ==> isJust $ balance s d
 

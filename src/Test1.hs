@@ -36,4 +36,5 @@ main = do
         quickCheck prop_mklinearFromEP4
         quickCheck prop_elasticity1
         quickCheck prop_elasticity2
+        quickCheck prop_balance
 
