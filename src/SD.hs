@@ -141,7 +141,7 @@ test24 =
   in do 
     assertBool "Balance" (isJust mb)
     assertBool ("Price: " ++ show p) (p > 3.45 && p < 3.47)
-    assertBool ("Quantity: " ++ show q) (floor q == 2630)
+    assertBool ("Quantity: " ++ show q) (floor q == (2630 :: Int))
 
 test26 =
   let p = 0.75

@@ -3,6 +3,8 @@ where
 
 import Test.QuickCheck
 import Data.Maybe
+import Control.Exception (catch)
+import Prelude hiding (catch)
 
 import Math
 import Line
@@ -24,8 +26,9 @@ prop_linenum :: Line -> Bool
 prop_linenum l = abs l * signum l == l
 
 main = do
-    let runT s a = do print s; a
-    let check s a = do print s; quickCheck a
+    let runT s a = putStrLn s >> a
+    let check s a = putStr (s ++ ": ") >> quickCheck a
+    let test s a = putStr (s ++ ": ") >> (a >> putStrLn "OK") `catch` \e -> putStrLn ("Error: " ++ show e)
 
     runT "Line" $ do
         check "intpoint" prop_intpoint
@@ -42,4 +45,5 @@ main = do
         check "prop_elasticity1" prop_elasticity1
         check "prop_elasticity2" prop_elasticity2
         check "prop_balance" prop_balance
-
+        test  "test24" test24
+        test  "test26" test26
