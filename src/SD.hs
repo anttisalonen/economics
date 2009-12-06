@@ -143,3 +143,15 @@ test24 =
     assertBool ("Price: " ++ show p) (p > 3.45 && p < 3.47)
     assertBool ("Quantity: " ++ show q) (floor q == 2630)
 
+test26 =
+  let p = 0.75
+      q = 7.5
+      es = 1.6
+      ed = -0.8
+      s = mkLinearFromEP es (q, p) :: Supply
+      d = mkLinearFromEP ed (q, p) :: Demand
+      sl = toLine s
+      dl = toLine d
+  in do
+    assertBool "Supply" (a sl == -4.5 && b sl == 16)
+    assertBool "Demand" (a dl == 13.5 && b dl == -8)
