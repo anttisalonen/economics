@@ -17,8 +17,7 @@ Executable test1
                    directory>=1.0.0.0, containers>=0.2.0.0,
                    random>=1.0.0.0, mtl>=1.1.0.0,
                    libaddutil>=0.0.2, EdisonCore>=1.2.0,
-                   EdisonAPI>=1.2.0,
-                   QuickCheck>=2.1.0.0
+                   EdisonAPI>=1.2.0
   Main-is:         Test1.hs
   Hs-Source-Dirs:  src
   Ghc-options:     -fhpc -Wall -fno-warn-missing-signatures
