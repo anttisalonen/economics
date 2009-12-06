@@ -3,6 +3,7 @@ where
 
 import Data.Maybe
 import Test.QuickCheck
+import Test.HUnit
 
 import Math
 import Line
@@ -131,4 +132,14 @@ prop_elasticity2 s q = q > 0 ==>
 prop_balance :: Supply -> Demand -> Property
 prop_balance s d = 
   amountAtPrice s 0 < amountAtPrice d 0 ==> isJust $ balance s d
+
+test24 = 
+  let s = mkLinear 1800 240
+      d = mkLinear 3550 (-266)
+      mb = balance s d
+      (p, q) = fromJust mb
+  in do 
+    assertBool "Balance" (isJust mb)
+    assertBool ("Price: " ++ show p) (p > 3.45 && p < 3.47)
+    assertBool ("Quantity: " ++ show q) (floor q == 2630)
 
