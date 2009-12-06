@@ -1,8 +1,6 @@
 module Line(Line(..), Point2, intersect, lineFunc, invLineFunc)
 where
 
-import Test.QuickCheck
-
 import Math
 
 data Line = Line { a :: Flt
@@ -17,12 +15,6 @@ instance Num Line where
   abs l = Line (abs (a l)) (abs (b l))
   signum l = Line (signum (a l)) (signum (b l))
   fromInteger i = Line 0 (fromInteger i)
-
-instance Arbitrary Line where
-  arbitrary = do
-    a' <- choose (-100, 100)
-    b' <- choose (-100, 100)
-    return $ Line a' b'
 
 type Point2 = (Flt, Flt)
 
@@ -42,4 +34,5 @@ lineFunc (Line a b) = \x -> a + x * b
 
 invLineFunc :: Line -> (Flt -> Flt)
 invLineFunc (Line a b) = \y -> (y - a) / b
+
 
