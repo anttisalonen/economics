@@ -1,0 +1,25 @@
+Name:           economics
+Version:        0.0.1
+Cabal-Version:  >= 1.2
+License:        OtherLicense
+License-File:   LICENSE
+Author:         Antti Salonen<ajsalonen at gmail dot com>
+Maintainer:     Antti Salonen<ajsalonen at gmail dot com>
+Copyright:      Antti Salonen 2009
+Stability:      Unstable
+Category:       Economics
+Synopsis:       Economics simulation.
+Description:    Economics simulation.
+Build-type:     Simple
+
+Executable test1
+  Build-Depends:   base, haskell98, array>=0.2.0.0,
+                   directory>=1.0.0.0, containers>=0.2.0.0,
+                   random>=1.0.0.0, mtl>=1.1.0.0,
+                   libaddutil>=0.0.2, EdisonCore>=1.2.0,
+                   EdisonAPI>=1.2.0
+  Main-is:         Test1.hs
+  Hs-Source-Dirs:  src
+  Ghc-options:     -fhpc -Wall -fno-warn-missing-signatures
+                   -fno-warn-name-shadowing
+                   -fno-warn-unused-matches
