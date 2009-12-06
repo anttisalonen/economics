@@ -20,6 +20,9 @@ prop_funcs l y =
       y' = invLineFunc l x
   in diffTolerance y y' 0.000000001
 
+prop_linenum :: Line -> Bool
+prop_linenum l = abs l * signum l == l
+
 main = do
     let runT s a = do print s; a
     let check s a = do print s; quickCheck a
@@ -27,6 +30,7 @@ main = do
     runT "Line" $ do
         check "intpoint" prop_intpoint
         check "funcs" prop_funcs
+        check "linenum" prop_linenum
 
     runT "SD" $ do
         check "isSupply" prop_isSupply

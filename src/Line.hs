@@ -10,6 +10,14 @@ data Line = Line { a :: Flt
                  }
   deriving (Read, Show, Eq)
 
+instance Num Line where
+  l1 + l2 = Line (a l1 + a l2) (b l1 + b l2)
+  l1 - l2 = Line (a l1 - a l2) (b l1 - b l2)
+  l1 * l2 = Line (a l1 * a l2) (b l1 * b l2)
+  abs l = Line (abs (a l)) (abs (b l))
+  signum l = Line (signum (a l)) (signum (b l))
+  fromInteger i = Line 0 (fromInteger i)
+
 instance Arbitrary Line where
   arbitrary = do
     a' <- choose (-100, 100)
