@@ -22,19 +22,20 @@ prop_funcs l y =
 
 main = do
     let runT s a = do print s; a
+    let check s a = do print s; quickCheck a
 
     runT "Line" $ do
-        quickCheck prop_intpoint
-        quickCheck prop_funcs
+        check "intpoint" prop_intpoint
+        check "funcs" prop_funcs
 
     runT "SD" $ do
-        quickCheck prop_isSupply
-        quickCheck prop_isDemand
-        quickCheck prop_mklinearFromEP1
-        quickCheck prop_mklinearFromEP2
-        quickCheck prop_mklinearFromEP3
-        quickCheck prop_mklinearFromEP4
-        quickCheck prop_elasticity1
-        quickCheck prop_elasticity2
-        quickCheck prop_balance
+        check "isSupply" prop_isSupply
+        check "isDemand" prop_isDemand
+        check "mkLinearFromEP1" prop_mklinearFromEP1
+        check "mkLinearFromEP2" prop_mklinearFromEP2
+        check "mkLinearFromEP3" prop_mklinearFromEP3
+        check "mkLinearFromEP4" prop_mklinearFromEP4
+        check "prop_elasticity1" prop_elasticity1
+        check "prop_elasticity2" prop_elasticity2
+        check "prop_balance" prop_balance
 

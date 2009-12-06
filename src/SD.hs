@@ -41,7 +41,7 @@ isValidDemand c =
 
 isValidSupply :: (Curve a) => a -> Bool
 isValidSupply c =
-  priceAtAmount c 0 > 0 && amountAtPrice c 0 < 0 && b (toLine c) >= 0
+  priceAtAmount c 0 < 0 && amountAtPrice c 0 > 0 && b (toLine c) >= 0
 
 priceElasticity :: (Curve a) => a -> Flt -> Elasticity
 priceElasticity c q =
@@ -66,7 +66,7 @@ balance s d =
 
 instance Arbitrary Supply where
   arbitrary = do
-    a' <- choose (-100,-1 :: Int)
+    a' <- choose (1,100 :: Int)
     b' <- choose (1,100 :: Int)
     return $ mkLinear (fromIntegral a') (fromIntegral b')
 
@@ -130,5 +130,5 @@ prop_elasticity2 s q = q > 0 ==>
 
 prop_balance :: Supply -> Demand -> Property
 prop_balance s d = 
-  priceAtAmount s 0 < priceAtAmount d 0 ==> isJust $ balance s d
+  amountAtPrice s 0 < amountAtPrice d 0 ==> isJust $ balance s d
 
