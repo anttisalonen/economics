@@ -26,3 +26,4 @@ Executable test1
                    -fno-warn-name-shadowing
                    -fno-warn-unused-matches
                    -fno-warn-missing-methods
+                   -fno-warn-orphans
