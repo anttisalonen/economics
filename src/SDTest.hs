@@ -6,6 +6,7 @@ import Test.QuickCheck
 import Test.HUnit
 
 import Math
+import Types
 import Line
 import SD
 
@@ -37,24 +38,24 @@ prop_mklinearFromEP2 e n@(q, p) = e < 0 && q > 0 && p > 0 ==>
   let c = mkLinearFromEP e n :: Demand
   in isValidDemand c ==> diffTolerance (priceElasticity c q) e 0.00001
 
-prop_mklinearFromEP3 :: Supply -> Flt -> Property
+prop_mklinearFromEP3 :: Supply -> Quantity -> Property
 prop_mklinearFromEP3 c q =
   let e = priceElasticity c q
-      p = amountAtPrice c q
+      p = quantityAtPrice c q
       c' = mkLinearFromEP e (q, p) :: Supply
-  in q > 0 && p > 0 && e > 0 ==> diffTolerance (amountAtPrice c' p) q 0.00001
+  in q > 0 && p > 0 && e > 0 ==> diffTolerance (quantityAtPrice c' p) q 0.00001
 
-prop_mklinearFromEP4 :: Demand -> Flt -> Property
+prop_mklinearFromEP4 :: Demand -> Quantity -> Property
 prop_mklinearFromEP4 c q =
   let e = priceElasticity c q
-      p = priceAtAmount c q
+      p = priceAtQuantity c q
       c' = mkLinearFromEP e (q, p) :: Demand
-  in q > 0 && e < 0 && p > 0 ==> isValidDemand c' && diffTolerance (amountAtPrice c' p) q 0.00001
+  in q > 0 && e < 0 && p > 0 ==> isValidDemand c' && diffTolerance (quantityAtPrice c' p) q 0.00001
 
-prop_elasticity1 :: Supply -> Flt -> Property
+prop_elasticity1 :: Supply -> Quantity -> Property
 prop_elasticity1 s q = q > 0 ==>
   let e = priceElasticity s q
-      s' = mkLinearFromEP e ((q, priceAtAmount s q)) :: Supply
+      s' = mkLinearFromEP e ((q, priceAtQuantity s q)) :: Supply
       a1 = a (toLine s)
       b1 = b (toLine s)
       a2 = a (toLine s')
@@ -62,10 +63,10 @@ prop_elasticity1 s q = q > 0 ==>
   in e > 0 ==> diffTolerance a1 a2 0.00001 &&
                diffTolerance b1 b2 0.00001
 
-prop_elasticity2 :: Demand -> Flt -> Property
+prop_elasticity2 :: Demand -> Quantity -> Property
 prop_elasticity2 s q = q > 0 ==>
   let e = priceElasticity s q
-      s' = mkLinearFromEP e ((q, priceAtAmount s q)) :: Demand
+      s' = mkLinearFromEP e ((q, priceAtQuantity s q)) :: Demand
       a1 = a (toLine s)
       b1 = b (toLine s)
       a2 = a (toLine s')
@@ -75,7 +76,7 @@ prop_elasticity2 s q = q > 0 ==>
 
 prop_balance :: Supply -> Demand -> Property
 prop_balance s d = 
-  amountAtPrice s 0 < amountAtPrice d 0 ==> isJust $ balance s d
+  quantityAtPrice s 0 < quantityAtPrice d 0 ==> isJust $ balance s d
 
 test24 = 
   let s = mkLinear 1800 240

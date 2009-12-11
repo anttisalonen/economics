@@ -5,8 +5,7 @@ import Data.Maybe
 
 import Math
 import Line
-
-type Elasticity = Flt
+import Types
 
 newtype Supply = Supply { linsupply :: Line }
   deriving (Eq, Read, Show)
@@ -36,22 +35,22 @@ mkLinearFromEP e (q, p) =
 
 isValidDemand :: (Curve a) => a -> Bool
 isValidDemand c = 
-  priceAtAmount c 0 > 0 && amountAtPrice c 0 > 0 && b (toLine c) <= 0
+  priceAtQuantity c 0 > 0 && quantityAtPrice c 0 > 0 && b (toLine c) <= 0
 
 isValidSupply :: (Curve a) => a -> Bool
 isValidSupply c =
-  priceAtAmount c 0 < 0 && b (toLine c) >= 0
+  priceAtQuantity c 0 < 0 && b (toLine c) >= 0
 
-priceElasticity :: (Curve a) => a -> Flt -> Elasticity
+priceElasticity :: (Curve a) => a -> Price -> Elasticity
 priceElasticity c q =
   (p / q) * (b (toLine c))
-    where p = priceAtAmount c q
+    where p = priceAtQuantity c q
 
-priceAtAmount :: (Curve a) => a -> Flt -> Flt
-priceAtAmount = invLineFunc . toLine
+priceAtQuantity :: (Curve a) => a -> Quantity -> Price
+priceAtQuantity = invLineFunc . toLine
 
-amountAtPrice :: (Curve a) => a -> Flt -> Flt
-amountAtPrice = lineFunc . toLine
+quantityAtPrice :: (Curve a) => a -> Price -> Quantity
+quantityAtPrice = lineFunc . toLine
 
 balance :: Supply -> Demand -> Maybe Point2
 balance s d = 

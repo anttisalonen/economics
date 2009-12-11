@@ -2,34 +2,53 @@ module Utility
 where
 
 import Math
+import Types
 
-cobbDouglas :: Flt -> Flt -> Flt -> Flt
-cobbDouglas a x y = a * log x + (1 - a) * log y
+cobbDouglasUtility :: Flt -> Flt -> Flt -> Flt
+cobbDouglasUtility a x y = a * log x + (1 - a) * log y
 
-cobbDouglasDemand :: Flt -> ((Flt -> Flt -> Flt), (Flt -> Flt -> Flt))
+cobbDouglasDemand :: Flt -> ((Flt -> Price -> Quantity), (Flt -> Price -> Quantity))
 cobbDouglasDemand a = (dx, dy)
-  where dx = \px i -> (a / px) * i
-        dy = \py i -> (a / py) * i
+  where dx = \i px -> (a / px) * i
+        dy = \i py -> ((1 - a) / py) * i
+
+cobbDouglasDemand' :: Flt -> Flt -> ((Price -> Quantity), (Price -> Quantity))
+cobbDouglasDemand' a i = (dx, dy)
+  where dx = \px -> (a / px) * i
+        dy = \py -> ((1 - a) / py) * i
 
 sqUtility :: Flt -> Flt -> Flt
-sqUtility = cobbDouglas 0.5
+sqUtility = cobbDouglasUtility 0.5
 
-sqDemand :: ((Flt -> Flt -> Flt), (Flt -> Flt -> Flt))
+sqDemand :: ((Flt -> Price -> Quantity), (Flt -> Price -> Quantity))
 sqDemand = cobbDouglasDemand 0.5
+
+sqDemand' :: Flt -> (Price -> Quantity)
+sqDemand' = fst . cobbDouglasDemand' 0.5
 
 perfectSubstitute :: Flt -> Flt -> Flt
 perfectSubstitute = (+)
 
-perfectSubstituteDemand :: ((Flt -> Flt -> Flt -> Flt), (Flt -> Flt -> Flt -> Flt))
+perfectSubstituteDemand :: ((Flt -> Price -> Price -> Quantity), (Flt -> Price -> Price -> Quantity))
 perfectSubstituteDemand = (dx, dy)
-  where dx = \px py i -> if px <= py then i / px else 0
-        dy = \py px i -> if py <  px then i / py else 0
+  where dx = \i py px -> if px <= py then i / px else 0
+        dy = \i px py -> if py <  px then i / py else 0
 
-perfectComplement :: Flt -> Flt -> Flt
-perfectComplement = min
+perfectSubstituteDemand' :: Flt -> ((Price -> Price -> Quantity), (Price -> Price -> Quantity))
+perfectSubstituteDemand' i = (dx, dy)
+  where dx = \py px -> if px <= py then i / px else 0
+        dy = \px py -> if py <  px then i / py else 0
 
-perfectComplementDemand :: ((Flt -> Flt -> Flt -> Flt), (Flt -> Flt -> Flt -> Flt))
+perfectComplementUtility :: Flt -> Flt -> Flt
+perfectComplementUtility = min
+
+perfectComplementDemand :: ((Flt -> Price -> Price -> Quantity), (Flt -> Price -> Price -> Quantity))
 perfectComplementDemand = (dx, dy)
-  where dx = \px py i -> i / (max px py)
-        dy = \py px i -> i / (max px py)
+  where dx = \i py px -> i / (max px py)
+        dy = \i px py -> i / (max px py)
+
+perfectComplementDemand' :: Flt -> ((Price -> Price -> Quantity), (Price -> Price -> Quantity))
+perfectComplementDemand' i = (dx, dy)
+  where dx = \py px -> i / (max px py)
+        dy = \px py -> i / (max px py)
 
