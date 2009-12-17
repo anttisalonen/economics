@@ -1,25 +1,27 @@
 module Production
 where
 
-cobbDouglasProduction :: (Floating a) => a -- | Total factor productivity
-                                      -> a -- | Labor output elasticity
-                                      -> a -- | Capital output elasticity
-                                      -> a -- | Capital input
-                                      -> a -- | Labor input
-                                      -> a -- | Total production (Monetary
-                                           -- value of all goods produced in
-                                           -- one time unit)
+import Types
+
+cobbDouglasProduction :: Flt         -- | Total factor productivity
+                      -> Elasticity  -- | Labor output elasticity
+                      -> Elasticity  -- | Capital output elasticity
+                      -> Quantity    -- | Capital input
+                      -> Quantity    -- | Labor input
+                      -> Quantity    -- | Total production (Monetary
+                                     -- value of all goods produced in
+                                     -- one time unit)
 cobbDouglasProduction productivity a b k l = productivity * k ** a * l ** b
 
 -- | Total costs of production of /quantity/ units of output for given 
 -- production factor prices and output elasticities.
-cobbDouglasCost :: (Floating a) => a -- | Output elasticity of labor
-                                -> a -- | Output elasticity of capital
-                                -> a -- | Price of one unit of labor
-                                -> a -- | Price of one unit of capital
-                                -> a -- | Total factor productivity
-                                -> a -- | Quantity to produce
-                                -> a -- | Cost for production
+cobbDouglasCost :: Elasticity -- | Output elasticity of labor
+                -> Elasticity -- | Output elasticity of capital
+                -> Price      -- | Price of one unit of labor
+                -> Price      -- | Price of one unit of capital
+                -> Flt        -- | Total factor productivity
+                -> Quantity   -- | Quantity to produce
+                -> Price      -- | Cost for production
 cobbDouglasCost a b wage rental productivity quantity = 
   (wage   ** (b / (a + b))) * 
   (rental ** (a / (a + b))) * 
