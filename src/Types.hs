@@ -1,4 +1,4 @@
-module Types
+module Types(Elasticity, Price, Quantity, Flt)
 where
 
 import Math
