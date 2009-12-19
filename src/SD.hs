@@ -3,7 +3,6 @@ where
 
 import Data.Maybe
 
-import Math
 import Line
 import Types
 
