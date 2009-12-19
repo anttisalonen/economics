@@ -2,16 +2,15 @@ module Main
 where
 
 import Test.QuickCheck
-import Control.Exception (catch)
-import Prelude hiding (catch)
 
 import LineTest
 import SDTest
+import ProductionTest
 
 main = do
     let runT s a = putStrLn s >> a
     let check s a = putStr (s ++ ": ") >> quickCheck a
-    let test s a = putStr (s ++ ": ") >> (a >> putStrLn "OK") `catch` \e -> putStrLn ("Error: " ++ show e)
+    let test s a = putStr (s ++ ": ") >> (a >> putStrLn "OK")
 
     runT "Line" $ do
         check "intpoint" prop_intpoint
@@ -30,3 +29,8 @@ main = do
         check "prop_balance" prop_balance
         test  "test24" test24
         test  "test26" test26
+
+    runT "Production" $ do
+        test  "test72" test72
+        test  "test73" test73
+        test  "test82" test82
