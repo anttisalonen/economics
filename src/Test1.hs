@@ -33,4 +33,5 @@ main = do
     runT "Production" $ do
         test  "test72" test72
         test  "test73" test73
-        test  "test82" test82
+        test  "test83" test83
+        test  "test86" test86

@@ -31,7 +31,7 @@ test73 =
   in do
     assertBool ("Capital/Labor ratio: " ++ show (k / l)) (closeEnough (k / l) 0.75 0.001)
 
-test82 =
+test83 =
   let fc = 100
       mc = LinearFunction 2 0
       pf = CobbDouglas (sqrt 2) 0.25 0.25
@@ -51,4 +51,11 @@ test82 =
     assertBool ("Costs: " ++ show c) (closeEnough c 1000 0.0001)
     assertBool ("Production at price 0: " ++ show q2) (closeEnough q2 0 0.0001)
     assertBool ("Production at price 1: " ++ show q3) (closeEnough q3 0.5 0.0001)
+
+test86 =
+  let mc = LinearFunction 2 3
+      p  = 9
+      q  = productionQuantity mc p
+  in do
+    assertBool ("Production: " ++ show q) (closeEnough q 3 0.0001)
 
