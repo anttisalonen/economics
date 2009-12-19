@@ -113,6 +113,9 @@ costs prodfunc r w q =
   let (k, l) = factors prodfunc r w q
   in w * l + r * k
 
+totalCosts :: CostFunction -> Rental -> Wage -> Quantity -> Price
+totalCosts (fc, pf) r w q = costs pf r w q + fc
+
 marginalCosts :: CostFunction -> Rental -> Wage -> MarginalCostFunction
 marginalCosts (_, pf) = marginalCosts' pf
 
@@ -140,32 +143,4 @@ productionQuantity (ExponentialFunction a b c) p =
 productionQuantity' :: ProductionFunction -> Rental -> Wage -> Price -> Quantity
 productionQuantity' prodfunc r w p =
   productionQuantity (marginalCosts' prodfunc r w) p
-
--- g :: Price -> Labor -> Capital -> ProductionFunction -> CostFunction
-
--- h :: Rental -> Labor -> ProductionFunction
-
--- g :: BudgetConstraint -> Isocost -> (Capital, Labor)
-
--- h :: Wage -> Labor -> Rental -> Capital -> Isocost
-
--- i :: CostFunction -> Quantity -> BudgetConstraint
-
--- j :: SupplyFunction -> Price -> Quantity
-
--- k :: DemandFunction -> Quantity -> Price
-
--- l :: CostFunction -> Quantity -> Price
-
--- m :: X -> Labor -> Rental -> Price
-
--- Given: DemandFunction, Quantity
--- -> Price
--- Needed: SupplyFunction
--- For SupplyFunction: CostFunction
--- For CostFunction: Fix costs, Labor, Capital, Wage, Rental
--- For Labor and Capital: BudgetConstraint, ProductionFunction
--- For BudgetConstraint: Wage, Rental, Income
--- For ProductionFunction: TFP, Output elasticities
--- TFP -> Elasticity -> Elasticity -> Wage -> Rental -> Income -> Fix costs -> SupplyFunction
 
