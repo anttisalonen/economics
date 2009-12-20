@@ -4,6 +4,7 @@ where
 import Test.HUnit
 
 import TestUtils
+import Curve
 import Production
 
 -- Pindyck, Rubinfeld, 2003: Chaptel 7, assignment 2.

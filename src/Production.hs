@@ -1,9 +1,8 @@
 module Production
 where
 
-import Libaddutil.Misc (quadr)
-
 import Types
+import Curve
 
 cobbDouglasProduction :: Flt         -- | Total factor productivity
                       -> Elasticity  -- | Labor output elasticity
@@ -160,22 +159,12 @@ marginalCosts' (Substitute prod alpha) r w =
        then LinearFunction ((1 / prod) * r) 0
        else LinearFunction ((1 / prod) * w) 0
 
-data MarginalCostFunction = LinearFunction Flt Flt
-                          | QuadraticFunction Flt Flt Flt
-                          | ExponentialFunction Flt Flt Flt
-    deriving (Eq, Show, Read)
+type MarginalCostFunction = Curve
 
 productionQuantity :: MarginalCostFunction -> Price -> Quantity
-productionQuantity (LinearFunction a b)      p = (p - b) / a
-productionQuantity (QuadraticFunction a b c) p = 
-  let val = quadr a b (p - c)
-  in if null val 
-       then 0 
-       else maximum val
-productionQuantity (ExponentialFunction a b c) p =
-  ((p - c) / b) ** (1 / a)
+productionQuantity = lookupX
 
 productionQuantity' :: ProductionFunction -> Rental -> Wage -> Price -> Quantity
 productionQuantity' prodfunc r w p =
-  productionQuantity (marginalCosts' prodfunc r w) p
+  lookupX (marginalCosts' prodfunc r w) p
 

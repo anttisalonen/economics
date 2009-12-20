@@ -3,6 +3,7 @@ where
 
 import Math
 import Types
+import Curve
 
 cobbDouglasUtility :: Flt -> Flt -> Flt -> Flt
 cobbDouglasUtility a x y = a * log x + (1 - a) * log y
@@ -64,4 +65,13 @@ data UtilityFunction = CobbDouglas { alpha :: Flt
 
 factors :: UtilityFunction -> Price -> Price -> Flt -> (Flt, Flt)
 factors (CobbDouglas a) px py i = (cobbDouglasDemand1 a i px, cobbDouglasDemand2 a i py)
+
+type DemandCurve = Curve
+
+demandCurve :: UtilityFunction -> Price -> Price -> Price -> (DemandCurve, DemandCurve)
+demandCurve (CobbDouglas a) i _ _ =
+  (ExponentialFunction (-1) (a * i) 0, ExponentialFunction (-1) (a * i) 0)
+
+demandQuantity :: DemandCurve -> Price -> Quantity
+demandQuantity = lookupX
 
