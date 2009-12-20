@@ -81,25 +81,55 @@ cobbDouglasMinimizeCost' productivity a b rental wage quantity =
 
 -- f :: CobbDouglasProduction -> Price -> Price -> Quantity -> (Quantity, Quantity)
 
+substituteProduction :: Flt         -- | Total factor productivity
+                     -> Flt         -- | Marginal rate of technical substitution
+                     -> Quantity    -- | Capital input
+                     -> Quantity    -- | Labor input
+                     -> Quantity    -- | Quantity of output
+substituteProduction p a k l = p * (a * k + l)
+
+substituteMinimizeCost' :: Flt
+                        -> Flt
+                        -> Price
+                        -> Price
+                        -> Quantity
+                        -> (Quantity, Quantity)
+substituteMinimizeCost' prod a rental wage q =
+  let dp = rental / wage
+  in if dp < a
+       then (q / prod, 0)
+       else (0, q / prod)
+
+substituteCost :: Flt        -- | Total factor productivity
+               -> Flt        -- | Marginal rate of technical substitution
+               -> Price      -- | Price of one unit of labor
+               -> Price      -- | Price of one unit of capital
+               -> Quantity   -- | Quantity to produce
+               -> Price      -- | Cost for production
+substituteCost prod a rental wage q = 
+  rental * k + wage * l
+   where (k, l) = substituteMinimizeCost' prod a rental wage q
+
 data ProductionFunction = CobbDouglas { tfp   :: Flt
                                       , alpha :: Elasticity
                                       , beta  :: Elasticity
                                       }
+                        | Substitute { tfp   :: Flt
+                                     , coeff :: Flt
+                                     }
     deriving (Eq, Show, Read)
-
-type Wage = Flt
-type Rental = Flt
-type Capital = Flt
-type Labor = Flt
 
 production :: ProductionFunction -> Quantity -> Quantity -> Quantity
 production (CobbDouglas productivity alpha beta) = cobbDouglasProduction productivity alpha beta
+production (Substitute productivity alpha) = substituteProduction productivity alpha
 
 cost :: CostFunction -> Rental -> Wage -> Quantity -> Price
 cost (fc, CobbDouglas productivity alpha beta) r w q = fc + (cobbDouglasCost productivity alpha beta r w q)
+cost (fc, Substitute  productivity alpha)      r w q = fc + (substituteCost productivity alpha r w q)
 
 factors :: ProductionFunction -> Rental -> Wage -> Quantity -> (Capital, Labor)
 factors (CobbDouglas prod alpha beta) = cobbDouglasMinimizeCost' prod alpha beta
+factors (Substitute  prod alpha)      = substituteMinimizeCost' prod alpha
 
 type CostFunction = (Price, ProductionFunction)
 
@@ -124,6 +154,11 @@ marginalCosts' (CobbDouglas prod alpha beta) r w =
   if alpha + beta == 0.5
     then LinearFunction (cobbDouglasCostDerivedConstant prod alpha beta r w) 0
     else ExponentialFunction (cobbDouglasCostDerivedExponent alpha beta) (cobbDouglasCostDerivedConstant prod alpha beta r w) 0
+marginalCosts' (Substitute prod alpha) r w =
+  let dp = r / w
+  in if dp < alpha
+       then LinearFunction ((1 / prod) * r) 0
+       else LinearFunction ((1 / prod) * w) 0
 
 data MarginalCostFunction = LinearFunction Flt Flt
                           | QuadraticFunction Flt Flt Flt
