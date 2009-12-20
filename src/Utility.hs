@@ -17,6 +17,12 @@ cobbDouglasDemand' a i =
   let (dx, dy) = cobbDouglasDemand a
   in (dx i, dy i)
 
+cobbDouglasDemand1 :: Flt -> Flt -> Price -> Quantity
+cobbDouglasDemand1 a i px = (a / px) * i
+
+cobbDouglasDemand2 :: Flt -> Flt -> Price -> Quantity
+cobbDouglasDemand2 a i py = ((i - a) / py) * i
+
 sqUtility :: Flt -> Flt -> Flt
 sqUtility = cobbDouglasUtility 0.5
 
@@ -51,4 +57,11 @@ perfectComplementDemand' :: Flt -> ((Price -> Price -> Quantity), (Price -> Pric
 perfectComplementDemand' i = 
   let (dx, dy) = perfectComplementDemand
   in (dx i, dy i)
+
+data UtilityFunction = CobbDouglas { alpha :: Flt
+                                   }
+    deriving (Eq, Show, Read)
+
+factors :: UtilityFunction -> Price -> Price -> Flt -> (Flt, Flt)
+factors (CobbDouglas a) px py i = (cobbDouglasDemand1 a i px, cobbDouglasDemand2 a i py)
 
