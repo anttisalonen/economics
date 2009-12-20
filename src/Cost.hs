@@ -35,6 +35,8 @@ marginalCosts' (Substitute prod alpha) r w =
   in if dp < alpha
        then LinearFunction ((1 / prod) * r) 0
        else LinearFunction ((1 / prod) * w) 0
+marginalCosts' (Complement prod alpha) r w =
+  LinearFunction ((alpha / prod) * r + (1 / prod) * w) 0
 
 productionQuantity :: MarginalCostFunction -> Price -> Quantity
 productionQuantity = lookupX
@@ -46,4 +48,5 @@ productionQuantity' prodfunc r w p =
 cost :: CostFunction -> Rental -> Wage -> Quantity -> Price
 cost (fc, CobbDouglas productivity alpha beta) r w q = fc + (cobbDouglasCost productivity alpha beta r w q)
 cost (fc, Substitute  productivity alpha)      r w q = fc + (substituteCost productivity alpha r w q)
+cost (fc, Complement  productivity alpha)      r w q = fc + (complementCost productivity alpha r w q)
 

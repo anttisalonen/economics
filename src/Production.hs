@@ -108,6 +108,17 @@ substituteCost prod a rental wage q =
   rental * k + wage * l
    where (k, l) = substituteMinimizeCost' prod a rental wage q
 
+complementProduction :: Flt -> Flt -> Quantity -> Quantity -> Quantity
+complementProduction p a k l = p * (min (k / a) l)
+
+complementMinimizeCost' prod a _ _ q =
+  (q / prod * a, q / prod)
+
+complementCost :: Flt -> Flt -> Price -> Price -> Quantity -> Price
+complementCost p a r w q =
+  r * k + w * l
+   where (k, l) = complementMinimizeCost' p a r w q
+
 data ProductionFunction = CobbDouglas { tfp   :: Flt
                                       , alpha :: Elasticity
                                       , beta  :: Elasticity
@@ -115,13 +126,18 @@ data ProductionFunction = CobbDouglas { tfp   :: Flt
                         | Substitute { tfp   :: Flt
                                      , coeff :: Flt
                                      }
+                        | Complement { tfp   :: Flt
+                                     , coeff :: Flt
+                                     }
     deriving (Eq, Show, Read)
 
 production :: ProductionFunction -> Quantity -> Quantity -> Quantity
 production (CobbDouglas productivity alpha beta) = cobbDouglasProduction productivity alpha beta
 production (Substitute productivity alpha) = substituteProduction productivity alpha
+production (Complement productivity alpha) = complementProduction productivity alpha
 
 factors :: ProductionFunction -> Rental -> Wage -> Quantity -> (Capital, Labor)
 factors (CobbDouglas prod alpha beta) = cobbDouglasMinimizeCost' prod alpha beta
 factors (Substitute  prod alpha)      = substituteMinimizeCost' prod alpha
+factors (Complement  prod alpha)      = complementMinimizeCost' prod alpha
 
