@@ -14,7 +14,7 @@ maxvalue :: Flt
 maxvalue = 1e17
 
 lookupX :: Curve -> Flt -> Flt
-lookupX (LinearFunction a b)      y 
+lookupX (LinearFunction a b) y 
  | a == 0    = maxvalue
  | otherwise = (y - b) / a
 lookupX (QuadraticFunction a b c) y = 

@@ -6,6 +6,7 @@ import Test.HUnit
 import TestUtils
 import Curve
 import Production
+import Cost
 
 -- Pindyck, Rubinfeld, 2003: Chaptel 7, assignment 2.
 test72 = 

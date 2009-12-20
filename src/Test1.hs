@@ -7,6 +7,7 @@ import LineTest
 import SDTest
 import ProductionTest
 import SupplyTest
+import TestMarket
 
 main = do
     let runT s a = putStrLn s >> a
@@ -39,4 +40,7 @@ main = do
 
     runT "Supply" $ do
         test "test1" supplytest1
+
+    runT "Test market" $ do
+        putStrLn . ppTuple5 . last $ runMarket
 
