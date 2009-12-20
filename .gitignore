@@ -1,3 +1,4 @@
 dist
 .hpc
 *.tix
+tmp
