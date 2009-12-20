@@ -6,6 +6,7 @@ import Test.QuickCheck
 import LineTest
 import SDTest
 import ProductionTest
+import SupplyTest
 
 main = do
     let runT s a = putStrLn s >> a
@@ -35,3 +36,7 @@ main = do
         test  "test73" test73
         test  "test83" test83
         test  "test86" test86
+
+    runT "Supply" $ do
+        test "test1" supplytest1
+
