@@ -13,9 +13,9 @@ cobbDouglasDemand a = (dx, dy)
         dy = \i py -> ((1 - a) / py) * i
 
 cobbDouglasDemand' :: Flt -> Flt -> ((Price -> Quantity), (Price -> Quantity))
-cobbDouglasDemand' a i = (dx, dy)
-  where dx = \px -> (a / px) * i
-        dy = \py -> ((1 - a) / py) * i
+cobbDouglasDemand' a i = 
+  let (dx, dy) = cobbDouglasDemand a
+  in (dx i, dy i)
 
 sqUtility :: Flt -> Flt -> Flt
 sqUtility = cobbDouglasUtility 0.5
@@ -35,9 +35,9 @@ perfectSubstituteDemand = (dx, dy)
         dy = \i px py -> if py <  px then i / py else 0
 
 perfectSubstituteDemand' :: Flt -> ((Price -> Price -> Quantity), (Price -> Price -> Quantity))
-perfectSubstituteDemand' i = (dx, dy)
-  where dx = \py px -> if px <= py then i / px else 0
-        dy = \px py -> if py <  px then i / py else 0
+perfectSubstituteDemand' i = 
+  let (dx, dy) = perfectSubstituteDemand
+  in (dx i, dy i)
 
 perfectComplementUtility :: Flt -> Flt -> Flt
 perfectComplementUtility = min
@@ -48,7 +48,7 @@ perfectComplementDemand = (dx, dy)
         dy = \i px py -> i / (max px py)
 
 perfectComplementDemand' :: Flt -> ((Price -> Price -> Quantity), (Price -> Price -> Quantity))
-perfectComplementDemand' i = (dx, dy)
-  where dx = \py px -> i / (max px py)
-        dy = \px py -> i / (max px py)
+perfectComplementDemand' i = 
+  let (dx, dy) = perfectComplementDemand
+  in (dx i, dy i)
 
