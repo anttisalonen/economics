@@ -3,9 +3,8 @@ where
 
 import Test.HUnit
 
+import TestUtils
 import Production
-
-closeEnough x y e = x > y - e && x < y + e
 
 -- Pindyck, Rubinfeld, 2003: Chaptel 7, assignment 2.
 test72 = 
