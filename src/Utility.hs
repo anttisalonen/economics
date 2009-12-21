@@ -1,7 +1,6 @@
 module Utility
 where
 
-import Math
 import Types
 import Curve
 
@@ -65,8 +64,6 @@ data UtilityFunction = CobbDouglas { alpha :: Flt
 
 factors :: UtilityFunction -> Price -> Price -> Flt -> (Flt, Flt)
 factors (CobbDouglas a) px py i = (cobbDouglasDemand1 a i px, cobbDouglasDemand2 a i py)
-
-type DemandCurve = Curve
 
 demandCurve :: UtilityFunction -> Price -> Price -> Price -> (DemandCurve, DemandCurve)
 demandCurve (CobbDouglas a) i _ _ =

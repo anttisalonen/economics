@@ -5,8 +5,6 @@ import Types
 import Production
 import Curve
 
-type MarginalCostFunction = Curve
-
 type CostFunction = (Price, ProductionFunction)
 
 -- Derive CostFunction on quantity - result is MR.

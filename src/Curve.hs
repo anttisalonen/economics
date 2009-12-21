@@ -1,7 +1,7 @@
 module Curve
 where
 
-import Types
+import Math
 
 import Libaddutil.Misc (quadr)
 
@@ -10,12 +10,12 @@ data Curve = LinearFunction Flt Flt
            | ExponentialFunction Flt Flt Flt
     deriving (Eq, Show, Read)
 
-maxvalue :: Flt
-maxvalue = 1e17
+maxCurveValue :: Flt
+maxCurveValue = 1e17
 
 lookupX :: Curve -> Flt -> Flt
 lookupX (LinearFunction a b) y 
- | a == 0    = maxvalue
+ | a == 0    = maxCurveValue
  | otherwise = (y - b) / a
 lookupX (QuadraticFunction a b c) y = 
   let val = quadr a b (y - c)
@@ -23,9 +23,9 @@ lookupX (QuadraticFunction a b c) y =
        then 0 
        else maximum val
 lookupX (ExponentialFunction a b c) y 
- | a == 0     = maxvalue
- | b == 0     = maxvalue
- | y - c == 0 = maxvalue
+ | a == 0     = maxCurveValue
+ | b == 0     = maxCurveValue
+ | y - c == 0 = maxCurveValue
  | otherwise  = ((y - c) / b) ** (1 / a)
 
 lookupY :: Curve -> Flt -> Flt
