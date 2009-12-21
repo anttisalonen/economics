@@ -59,7 +59,9 @@ utilitymap = E.fromSeq [("Welfare", UtilityInfo uf1 "Food" "Clothing")]
 
 quantitymap = E.fromSeq [("Food", 0.0), ("Clothing", 0.0)]
 
-pricemap = E.fromSeq [("Food", 0.0), ("Clothing", 0.0), ("Labor", wage), ("Capital", rental)]
+pricemap = E.fromSeq [("Food", 0.0), ("Clothing", 0.0)]
+
+klpricemap = E.fromSeq [("Labor", wage), ("Capital", rental)]
 
 tendLin :: (Num a, Ord a) => a -> a -> a -> a
 tendLin maxchange start target =
@@ -111,9 +113,16 @@ mkSupply ps pn (ProductionInfo pf i1 i2 maxchange changecoeff) =
 
 gather :: ProductionMap -> MarketQuantityMap -> MarketSupplyMap -> MarketDemandMap -> (MarketQuantityMap, MarketPriceMap)
 gather prods quantities supplies demands = 
- E.foldWithKey' go (E.empty, E.empty) prods
-  where go :: ProductName -> ProductionInfo -> (MarketQuantityMap, MarketPriceMap) -> (MarketQuantityMap, MarketPriceMap)
-        go name prod (qs, ps) = fromMaybe (qs, ps) $ do
+ E.foldWithKey' (adjustMarket quantities supplies demands) (E.empty, E.empty) prods
+
+adjustMarket :: MarketQuantityMap                    -- | Quantities available on market
+             -> MarketSupplyMap                      -- | Market supply curves
+             -> MarketDemandMap                      -- | Market demand curves
+             -> ProductName                          -- | Name of product to adjust
+             -> ProductionInfo                       -- | Production function info
+             -> (MarketQuantityMap, MarketPriceMap)  -- | Market info
+             -> (MarketQuantityMap, MarketPriceMap)  -- | Market info
+adjustMarket quantities supplies demands name prod (qs, ps) = fromMaybe (qs, ps) $ do
           let q = E.lookupWithDefault 0 name quantities
           let change = maxchange prod
           let coeff = changecoeff prod
@@ -127,6 +136,9 @@ run' prods utilities i quantities prices =
   let demands  = buildProductMap $ concatMap (mkDemand prices i) (E.elements utilities)
       supplies = buildProductMap $ concatMap (uncurry (mkSupply prices)) (E.toSeq prods)
   in gather prods quantities supplies demands
+
+runKL' :: ProductionMap -> UtilityMap -> MarketPriceMap -> Price -> MarketQuantityMap -> MarketPriceMap -> (MarketQuantityMap, MarketPriceMap)
+runKL' prods utilities newprices i quantities prices = run' prods utilities i quantities (E.union newprices prices)
 
 ppTuple :: (PrintfArg a, PrintfArg b) => (a, b) -> String
 ppTuple (a, b) = printf "%3.3f %3.3f" a b
@@ -147,7 +159,7 @@ showMarket = mapM_ putStrLn . map ppTuple5 $ runMarket
 
 runMarket = take 30 . drop 2 $ iterate (uncurry run) ((0, 0), (0, 0))
 
-runMarket' = take 30 . drop 2 $ iterate (uncurry (run' productionmap utilitymap i)) (quantitymap, pricemap)
+runMarket' = take 30 . drop 2 $ iterate (uncurry (runKL' productionmap utilitymap klpricemap i)) (quantitymap, pricemap)
 
 showMarket' = putStrLn . concatMap showMarketInfo $ runMarket'
 
