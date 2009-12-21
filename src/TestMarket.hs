@@ -164,12 +164,12 @@ runMarket' = take 30 . drop 2 $ iterate (uncurry (runKL' productionmap utilityma
 showMarket' = putStrLn . concatMap showMarketInfo $ runMarket'
 
 showMarketInfo :: (MarketQuantityMap, MarketPriceMap) -> String
-showMarketInfo (qs, ps) = intercalate "\n" . S.toList . S.rcons "\n" $ E.foldWithKey' go (S.singleton (printf "%-21s %-9s %s" "Name" "Quantity" "Price")) qs
+showMarketInfo (qs, ps) = intercalate "\n" . S.toList . S.rcons "\n" $ E.foldWithKey' go (S.singleton (printf "%-21s %-12s %s" "Name" "Quantity" "Price")) qs
   where go :: ProductName -> Quantity -> S.Seq String -> S.Seq String
         go name q prev = let mp = E.lookupM name ps
                          in case mp of
                               Nothing -> prev
-                              Just p  -> S.rcons (printf "%-20s %7.2f %7.2f" name q p) prev
+                              Just p  -> S.rcons (printf "%-20s %9.2f %9.2f" name q p) prev
 
 -- substitute x with y in s
 -- substitute :: String -> String -> String -> String
