@@ -21,7 +21,7 @@ cobbDouglasDemand1 :: Flt -> Flt -> Price -> Quantity
 cobbDouglasDemand1 a i px = (a / px) * i
 
 cobbDouglasDemand2 :: Flt -> Flt -> Price -> Quantity
-cobbDouglasDemand2 a i py = ((i - a) / py) * i
+cobbDouglasDemand2 a i py = ((1 - a) / py) * i
 
 sqUtility :: Flt -> Flt -> Flt
 sqUtility = cobbDouglasUtility 0.5
