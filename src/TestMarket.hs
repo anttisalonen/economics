@@ -43,25 +43,38 @@ type MarketSupplyMap = ProductMap SupplyCurve
 
 type MarketDemandMap = ProductMap DemandCurve
 
-pf1 = P.CobbDouglas 1 0.25 0.25
-pf2 = P.Substitute  1 1
-
-rental = 1000
 wage = 1
 i = 100
 
-uf1 = U.CobbDouglas 0.5
+productionmap = E.fromSeq 
+ [
+   ("Rice",     ProductionInfo (P.Substitute  1 1)           "Labor" "Capital" 1 0.1)
+  ,("Wheat",    ProductionInfo (P.Substitute  1 2)           "Labor" "Capital" 1 0.1)
+  ,("Pig",      ProductionInfo (P.Complement  1 0.4)         "Labor" "Wheat"   1 0.1)
+  ,("Cow",      ProductionInfo (P.Complement  1 0.2)         "Labor" "Wheat"   1 0.1)
+  ,("Sheep",    ProductionInfo (P.Complement  1 0.3)         "Labor" "Wheat"   1 0.1)
+  ,("Pork",     ProductionInfo (P.Complement  1 3.0)         "Labor" "Pig"     1 0.1)
+  -- ,("Beef",     ProductionInfo (P.Complement  1 2.0)         "Labor" "Cow"     1 0.1)
+  -- ,("Mutton",   ProductionInfo (P.Complement  1 3.0)         "Labor" "Sheep"   1 0.1)
+  -- ,("Leather",  ProductionInfo (P.Complement  1 0.5)         "Labor" "Cow"     1 0.1)
+  -- ,("Wool",     ProductionInfo (P.Complement  1 0.5)         "Labor" "Sheep"   1 0.1)
+ ]
 
-productionmap = E.fromSeq [("Food",     ProductionInfo pf1 "Labor" "Capital" 10 0.1),
-                           ("Clothing", ProductionInfo pf2 "Labor" "Capital" 10 0.1)]
+utilitymap = E.fromSeq 
+ [
+   ("Welfare",    UtilityInfo (U.CobbDouglas 0.5)  "Food"       "Clothing")
+  ,("Clothing",   UtilityInfo (U.Complement  2)    "Wool"       "Leather")
+  ,("Food",       UtilityInfo (U.CobbDouglas 0.25) "Vegetables" "Meat")
+  ,("Vegetables", UtilityInfo (U.CobbDouglas 0.5)  "Wheat"      "Rice")
+  ,("Meat",       UtilityInfo (U.Substitute  1.2)  "Pork"       "OtherMeat")
+  ,("OtherMeat",  UtilityInfo (U.Substitute  1.2)  "Beef"       "Mutton")
+ ]
 
-utilitymap = E.fromSeq [("Welfare", UtilityInfo uf1 "Food" "Clothing")]
+quantitymap = E.fromSeq []
 
-quantitymap = E.fromSeq [("Food", 0.0), ("Clothing", 0.0)]
+pricemap = E.fromSeq []
 
-pricemap = E.fromSeq [("Food", 0.0), ("Clothing", 0.0)]
-
-klpricemap = E.fromSeq [("Labor", wage), ("Capital", rental)]
+klpricemap = E.fromSeq [("Labor", wage)]
 
 tendLin :: (Num a, Ord a) => a -> a -> a -> a
 tendLin maxchange start target =
@@ -76,16 +89,6 @@ tendLog coeff start target =
   let diff   = target - start
       change = diff * coeff
   in start + change
-
-run (p1, p2) (q1, q2) = 
-  let (demand1, demand2) = U.demandCurve uf1 i p1 p2
-      supply1            = marginalCosts' pf1 rental wage
-      supply2            = marginalCosts' pf2 rental wage
-      np1                = lookupX demand1 q1
-      np2                = lookupX demand2 q2
-      nq1                = tendLin 10 q1 $ tendLog 0.1 q1 $ lookupY supply1 np1
-      nq2                = tendLin 10 q2 $ tendLog 0.1 q2 $ lookupY supply2 np2
-  in ((np1, np2), (nq1, nq2))
 
 buildProductMap :: [(ProductName, a)] -> ProductMap a
 buildProductMap = E.fromSeq
@@ -131,15 +134,28 @@ adjustMarket quantities supplies demands name prod (qs, ps) = fromMaybe (qs, ps)
           let (q', p') = updateQP q change coeff s d
           return (E.insert name q' qs, E.insert name p' ps)
 
-run' :: ProductionMap -> UtilityMap -> Price -> MarketQuantityMap -> MarketPriceMap -> (MarketQuantityMap, MarketPriceMap)
-run' prods utilities i quantities prices = 
+run :: ProductionMap -> UtilityMap -> Price -> MarketQuantityMap -> MarketPriceMap -> (MarketQuantityMap, MarketPriceMap)
+run prods utilities i quantities prices = 
   let demands  = buildProductMap $ concatMap (mkDemand prices i) (E.elements utilities)
       supplies = buildProductMap $ concatMap (uncurry (mkSupply prices)) (E.toSeq prods)
   in gather prods quantities supplies demands
 
-runKL' :: ProductionMap -> UtilityMap -> MarketPriceMap -> Price -> MarketQuantityMap -> MarketPriceMap -> (MarketQuantityMap, MarketPriceMap)
-runKL' prods utilities newprices i quantities prices = run' prods utilities i quantities (E.union newprices prices)
+runKL :: ProductionMap -> UtilityMap -> MarketPriceMap -> Price -> MarketQuantityMap -> MarketPriceMap -> (MarketQuantityMap, MarketPriceMap)
+runKL prods utilities newprices i quantities prices = run prods utilities i quantities (E.union newprices prices)
 
+runMarket = take 30 . drop 2 $ iterate (uncurry (runKL productionmap utilitymap klpricemap i)) (quantitymap, pricemap)
+
+showMarket = putStrLn . concatMap showMarketInfo $ runMarket
+
+showMarketInfo :: (MarketQuantityMap, MarketPriceMap) -> String
+showMarketInfo (qs, ps) = intercalate "\n" . S.toList . S.rcons "\n" $ E.foldWithKey' go (S.singleton (printf "%-21s %-12s %s" "Name" "Quantity" "Price")) qs
+  where go :: ProductName -> Quantity -> S.Seq String -> S.Seq String
+        go name q prev = let mp = E.lookupM name ps
+                         in case mp of
+                              Nothing -> prev
+                              Just p  -> S.rcons (printf "%-20s %9.2f %9.2f" name q p) prev
+
+{-
 ppTuple :: (PrintfArg a, PrintfArg b) => (a, b) -> String
 ppTuple (a, b) = printf "%3.3f %3.3f" a b
 
@@ -154,22 +170,7 @@ ppTuple5 :: (Show a, Show b, Show c, Show d,
              PrintfArg c,
              PrintfArg d) => ((a, b), (c, d)) -> String
 ppTuple5 (a, b) = ppTuple4 a ++ "," ++ ppTuple4 b
-
-showMarket = mapM_ putStrLn . map ppTuple5 $ runMarket
-
-runMarket = take 30 . drop 2 $ iterate (uncurry run) ((0, 0), (0, 0))
-
-runMarket' = take 30 . drop 2 $ iterate (uncurry (runKL' productionmap utilitymap klpricemap i)) (quantitymap, pricemap)
-
-showMarket' = putStrLn . concatMap showMarketInfo $ runMarket'
-
-showMarketInfo :: (MarketQuantityMap, MarketPriceMap) -> String
-showMarketInfo (qs, ps) = intercalate "\n" . S.toList . S.rcons "\n" $ E.foldWithKey' go (S.singleton (printf "%-21s %-12s %s" "Name" "Quantity" "Price")) qs
-  where go :: ProductName -> Quantity -> S.Seq String -> S.Seq String
-        go name q prev = let mp = E.lookupM name ps
-                         in case mp of
-                              Nothing -> prev
-                              Just p  -> S.rcons (printf "%-20s %9.2f %9.2f" name q p) prev
+-}
 
 -- substitute x with y in s
 -- substitute :: String -> String -> String -> String
