@@ -36,6 +36,9 @@ marginalCosts' (Substitute prod alpha) r w =
 marginalCosts' (Complement prod alpha) r w =
   LinearFunction ((alpha / prod) * r + (1 / prod) * w) 0
 
+marginalCostsMRTS :: ProductionFunction -> Flt -> MarginalCostFunction
+marginalCostsMRTS p mrts = marginalCosts' p 1 mrts
+
 productionQuantity :: MarginalCostFunction -> Price -> Quantity
 productionQuantity = lookupX
 
