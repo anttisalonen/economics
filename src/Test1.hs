@@ -47,5 +47,5 @@ main = do
         test "Complement" testComplement
 
     runT "Test market" $ do
-        putStrLn . ppTuple5 . last $ runMarket
+        putStrLn . showMarketInfo . last $ runMarket
 
