@@ -44,16 +44,17 @@ type MarketSupplyMap = ProductMap SupplyCurve
 type MarketDemandMap = ProductMap DemandCurve
 
 wage = 1
+rental = 1000
 i = 100
 
 productionmap = E.fromSeq 
  [
-   ("Rice",     ProductionInfo (P.Substitute  1 1)           "Labor" "Capital" 1 0.1)
-  ,("Wheat",    ProductionInfo (P.Substitute  1 2)           "Labor" "Capital" 1 0.1)
-  ,("Pig",      ProductionInfo (P.Complement  1 0.4)         "Labor" "Wheat"   1 0.1)
-  ,("Cow",      ProductionInfo (P.Complement  1 0.2)         "Labor" "Wheat"   1 0.1)
-  ,("Sheep",    ProductionInfo (P.Complement  1 0.3)         "Labor" "Wheat"   1 0.1)
-  ,("Pork",     ProductionInfo (P.Complement  1 3.0)         "Labor" "Pig"     1 0.1)
+   ("Rice",     ProductionInfo (P.CobbDouglas 1 0.45 0.05)      "Labor" "Capital" 9 0.1)
+  ,("Wheat",    ProductionInfo (P.CobbDouglas 3 0.25 0.25)      "Labor" "Capital" 9 0.1)
+  -- ,("Pig",      ProductionInfo (P.Complement  1 0.4)         "Labor" "Wheat"   1 0.1)
+  -- ,("Cow",      ProductionInfo (P.Complement  1 0.2)         "Labor" "Wheat"   1 0.1)
+  -- ,("Sheep",    ProductionInfo (P.Complement  1 0.3)         "Labor" "Wheat"   1 0.1)
+  -- ,("Pork",     ProductionInfo (P.Complement  1 3.0)         "Labor" "Pig"     1 0.1)
   -- ,("Beef",     ProductionInfo (P.Complement  1 2.0)         "Labor" "Cow"     1 0.1)
   -- ,("Mutton",   ProductionInfo (P.Complement  1 3.0)         "Labor" "Sheep"   1 0.1)
   -- ,("Leather",  ProductionInfo (P.Complement  1 0.5)         "Labor" "Cow"     1 0.1)
@@ -74,7 +75,7 @@ quantitymap = E.fromSeq []
 
 pricemap = E.fromSeq []
 
-klpricemap = E.fromSeq [("Labor", wage)]
+klpricemap = E.fromSeq [("Labor", wage), ("Capital", rental)]
 
 tendLin :: (Num a, Ord a) => a -> a -> a -> a
 tendLin maxchange start target =
