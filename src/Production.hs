@@ -141,3 +141,6 @@ factors (CobbDouglas prod alpha beta) = cobbDouglasMinimizeCost' prod alpha beta
 factors (Substitute  prod alpha)      = substituteMinimizeCost' prod alpha
 factors (Complement  prod alpha)      = complementMinimizeCost' prod alpha
 
+factorsMRTS :: ProductionFunction -> Flt -> Quantity -> (Capital, Labor)
+factorsMRTS p mrts = factors p 1 mrts
+
