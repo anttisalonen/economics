@@ -49,12 +49,12 @@ perfectSubstituteDemand' a i =
   in (dx a i, dy a i)
 
 perfectComplementUtility :: Flt -> Flt -> Flt -> Flt
-perfectComplementUtility a x y = min (a * x) y
+perfectComplementUtility a x y = min (a * y) x
 
 perfectComplementDemand :: ((Flt -> Flt -> Price -> Price -> Quantity), (Flt -> Flt -> Price -> Price -> Quantity))
 perfectComplementDemand = (dx, dy)
-  where dx = \a i py px -> i / (max (a * px) py)
-        dy = \a i px py -> i / (max (a * px) py)
+  where dx = \a i py px ->  i      * (1 / (px + py * a))
+        dy = \a i px py -> (i / a) * (1 / (px + py * a))
 
 perfectComplementDemand' :: Flt -> Flt -> ((Price -> Price -> Quantity), (Price -> Price -> Quantity))
 perfectComplementDemand' a i = 
