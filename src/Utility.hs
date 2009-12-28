@@ -53,8 +53,8 @@ perfectComplementUtility a x y = min (a * y) x
 
 perfectComplementDemand :: ((Flt -> Flt -> Price -> Price -> Quantity), (Flt -> Flt -> Price -> Price -> Quantity))
 perfectComplementDemand = (dx, dy)
-  where dx = \a i py px ->  i      * (1 / (px + py * a))
-        dy = \a i px py -> (i / a) * (1 / (px + py * a))
+  where dx = \a i py px -> i * a / (px * a + py)
+        dy = \a i px py -> i     / (px * a + py)
 
 perfectComplementDemand' :: Flt -> Flt -> ((Price -> Price -> Quantity), (Price -> Price -> Quantity))
 perfectComplementDemand' a i = 
