@@ -20,6 +20,6 @@ balance' x y =
        then Nothing 
        else Just (q, polynomial q x)
 
-balance :: Curve -> Curve -> Maybe (Flt, Flt)
+balance :: Curve -> Curve -> Maybe (Quantity, Price)
 balance c1 c2 = balance' (curveToPol c1) (curveToPol c2)
 
