@@ -144,3 +144,9 @@ factors (Complement  prod alpha)      = complementMinimizeCost' prod alpha
 factorsMRTS :: ProductionFunction -> Flt -> Quantity -> (Capital, Labor)
 factorsMRTS p mrts = factors p 1 mrts
 
+factorsL :: ProductionFunction -> [Price] -> Quantity -> [Quantity]
+factorsL pf [p1, p2] q =
+  let (c, l) = factors pf p1 p2 q
+  in [c, l]
+factorsL _ _ _ = error "TODO: production factors for multiple inputs not defined"
+
