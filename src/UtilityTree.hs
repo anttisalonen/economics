@@ -1,5 +1,6 @@
 module UtilityTree(
     weightAllocation, budgetAllocation,
+    resolveAllocation,
     UtilityTree, MultiplicatorTree)
 where
 
@@ -22,7 +23,7 @@ weightAllocation :: UtilityTree -> MultiplicatorTree
 weightAllocation = g . f
 
 budgetAllocation :: Price -> UtilityTree -> MarketPriceMap
-budgetAllocation b = resolve b . weightAllocation
+budgetAllocation b = resolveAllocation b . weightAllocation
 
 f :: UtilityTree -> MiddleTree
 f t@(NodeR (n, u) l r) = NodeR (n, u, p) (f l) (f r)
@@ -69,14 +70,8 @@ get EmptyR                = 0
 
 -- Converts a final tree of only multiplicators to a map of quantities.
 -- The multiplicators are simply multiplied all the way down.
-resolve :: Flt -> MultiplicatorTree -> MarketPriceMap
-resolve m (Node (n, v) Empty Empty) = E.singleton n (m * v)
-resolve m (Node (_, v) l r)         = resolve (m * v) l `E.union` resolve (m * v) r
-resolve _ Empty                     = E.empty
-
-mul :: Flt -> MultiplicatorTree -> MultiplicatorTree
-mul v = fmap (\(x, p) -> (x, v * p))
-
-toMap :: (Ord k) => BinTree (k, a) -> E.FM k a
-toMap = E.fromSeq . Foldable.toList
+resolveAllocation :: Flt -> MultiplicatorTree -> MarketPriceMap
+resolveAllocation m (Node (n, v) Empty Empty) = E.singleton n (m * v)
+resolveAllocation m (Node (_, v) l r)         = resolveAllocation (m * v) l `E.union` resolveAllocation (m * v) r
+resolveAllocation _ Empty                     = E.empty
 
