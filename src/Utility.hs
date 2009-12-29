@@ -60,7 +60,7 @@ data UtilityFunction = CobbDouglas { alpha :: Flt }
                      | Complement { alpha :: Flt }
     deriving (Eq, Show, Read)
 
-factors :: UtilityFunction -> Price -> Price -> Flt -> (Flt, Flt)
+factors :: UtilityFunction -> Price -> Price -> Flt -> (Quantity, Quantity)
 factors (CobbDouglas a) px py i = (fst (cobbDouglasDemand' a i) px, snd (cobbDouglasDemand' a i) py)
 factors (Substitute a)  px py i = 
   let (dx, dy) = perfectSubstituteDemand' a i
@@ -68,6 +68,12 @@ factors (Substitute a)  px py i =
 factors (Complement a)  px py i =
   let (dx, dy) = perfectComplementDemand' a i
   in  (dx py px, dy px py)
+
+factorsL :: UtilityFunction -> [Price] -> Flt -> [Quantity]
+factorsL uf [p1, p2] i =
+  let (x, y) = factors uf p1 p2 i
+  in [x, y]
+factorsL _ _ _ = error "TODO: utility factors for multiple inputs not defined"
 
 demandCurve :: UtilityFunction -> Price -> Price -> Price -> (DemandCurve, DemandCurve)
 demandCurve (CobbDouglas a) i _ _ =
@@ -84,4 +90,13 @@ demandCurve (Complement a) i _ _ =
 
 demandQuantity :: DemandCurve -> Price -> Quantity
 demandQuantity = lookupX
+
+utility :: UtilityFunction -> Quantity -> Quantity -> Flt
+utility (CobbDouglas a) = cobbDouglasUtility a
+utility (Substitute a)  = perfectSubstitute a
+utility (Complement a)  = perfectComplementUtility a
+
+utilityL :: UtilityFunction -> [Quantity] -> Flt
+utilityL uf [q1, q2] = utility uf q1 q2
+utilityL _ _ = error "TODO: utility for multiple inputs not defined"
 
