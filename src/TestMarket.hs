@@ -1,6 +1,8 @@
 module TestMarket
 where
 
+import Test.HUnit
+
 import qualified Data.Edison.Assoc.StandardMap as E
 
 import Libaddutil.BinTree
@@ -9,6 +11,7 @@ import qualified Production as P
 import qualified Utility as U
 import MarketHelpers
 import MarketTypes
+import UtilityTree
 import Market
 
 productionmap = E.fromSeq 
@@ -66,4 +69,10 @@ showLatestEconomy = showEconomy . last
 
 runEconomy :: [Economy]
 runEconomy = take 30 . drop 2 $ iterate stepEconomy initialEconomy
+
+testUtree = do
+  let w = weightAllocation utree
+  let b = budgetAllocation 100 utree
+  assertBool ("Weight allocation: " ++ show w) (show w == "Node (\"Welfare\",1.0) (Node (\"Food\",0.53125) (Node (\"Vegetables\",0.47058823529411764) (Node (\"Wheat\",0.625) Empty Empty) (Node (\"Rice\",0.375) Empty Empty)) (Node (\"Meat\",0.5294117647058824) (Node (\"Pork\",1.0) Empty Empty) (Node (\"OtherMeat\",0.0) (Node (\"Beef\",1.0) Empty Empty) (Node (\"Mutton\",0.0) Empty Empty)))) (Node (\"Clothing\",0.46875) (Node (\"Wool\",1.0) Empty Empty) (Node (\"Leather\",0.0) Empty Empty))")
+  assertBool ("Budget allocation: " ++ show b) (show b == "fromList [(\"Beef\",0.0),(\"Leather\",0.0),(\"Mutton\",0.0),(\"Pork\",28.125),(\"Rice\",9.375),(\"Wheat\",15.625),(\"Wool\",46.875)]")
 

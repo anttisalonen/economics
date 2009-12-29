@@ -48,4 +48,4 @@ main = do
 
     runT "Test market" $ do
         putStrLn . showLatestEconomy $ runEconomy
-
+        test "Utility tree" testUtree

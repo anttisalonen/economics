@@ -8,19 +8,13 @@ import qualified Data.Foldable as Foldable
 
 import Libaddutil.BinTree
 
-import qualified Production as P
 import qualified Utility as U
 import Types
-import Cost
-import Curve
-import MarketHelpers
 import MarketTypes
 
 type UtilityTree = BinTreeR (ProductName, U.UtilityFunction) (ProductName, Price)
 
 type MiddleTree = BinTreeR (ProductName, U.UtilityFunction, Price) (ProductName, Price)
-
-type PriceTree = BinTree (ProductName, Price)
 
 type MultiplicatorTree = BinTree (ProductName, Flt)
 
@@ -73,15 +67,15 @@ get (NodeR (_, _, p) _ _) = p
 get (LeafR (_, p))        = p
 get EmptyR                = 0
 
-mul :: Flt -> MultiplicatorTree -> MultiplicatorTree
-mul v = fmap (\(x, p) -> (x, v * p))
-
 -- Converts a final tree of only multiplicators to a map of quantities.
 -- The multiplicators are simply multiplied all the way down.
-resolve :: Flt -> MultiplicatorTree -> MarketQuantityMap
+resolve :: Flt -> MultiplicatorTree -> MarketPriceMap
 resolve m (Node (n, v) Empty Empty) = E.singleton n (m * v)
 resolve m (Node (_, v) l r)         = resolve (m * v) l `E.union` resolve (m * v) r
 resolve _ Empty                     = E.empty
+
+mul :: Flt -> MultiplicatorTree -> MultiplicatorTree
+mul v = fmap (\(x, p) -> (x, v * p))
 
 toMap :: (Ord k) => BinTree (k, a) -> E.FM k a
 toMap = E.fromSeq . Foldable.toList
