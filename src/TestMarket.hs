@@ -14,18 +14,30 @@ import MarketTypes
 import UtilityTree
 import Market
 
+pfRice = P.Complement 1 0
+pfWheat = P.Complement 1 0
+pfPig = P.Complement 1 0.4
+pfCow = P.Complement 1 0.2
+pfSheep = P.Complement 1 0.3
+pfPork = P.Complement 1 3.0
+pfBeef = P.Complement 1 2.0
+pfMutton = P.Complement 1 3.0
+pfLeather = P.Complement 1 0.5
+pfWool = P.Complement 1 0.5
+
 productionmap = E.fromSeq 
  [
-   ("Rice",     ProductionInfo (P.CobbDouglas 1 0.45 0.05)      "Labor" "Capital" 9 0.1)
-  ,("Wheat",    ProductionInfo (P.CobbDouglas 3 0.25 0.25)      "Labor" "Capital" 9 0.1)
-  -- ,("Pig",      ProductionInfo (P.Complement  1 0.4)         "Labor" "Wheat"   1 0.1)
-  -- ,("Cow",      ProductionInfo (P.Complement  1 0.2)         "Labor" "Wheat"   1 0.1)
-  -- ,("Sheep",    ProductionInfo (P.Complement  1 0.3)         "Labor" "Wheat"   1 0.1)
-  -- ,("Pork",     ProductionInfo (P.Complement  1 3.0)         "Labor" "Pig"     1 0.1)
-  -- ,("Beef",     ProductionInfo (P.Complement  1 2.0)         "Labor" "Cow"     1 0.1)
-  -- ,("Mutton",   ProductionInfo (P.Complement  1 3.0)         "Labor" "Sheep"   1 0.1)
-  -- ,("Leather",  ProductionInfo (P.Complement  1 0.5)         "Labor" "Cow"     1 0.1)
-  -- ,("Wool",     ProductionInfo (P.Complement  1 0.5)         "Labor" "Sheep"   1 0.1)
+   ("Rice",     ProductionInfo pfRice    "" "Labor" 9 0.1)
+  ,("Wheat",    ProductionInfo pfWheat   "" "Labor" 9 0.1)
+  ,("Pig",      ProductionInfo pfPig     "Labor" "Wheat"   1 0.1)
+  ,("Cow",      ProductionInfo pfCow     "Labor" "Wheat"   1 0.1)
+  ,("Sheep",    ProductionInfo pfSheep   "Labor" "Wheat"   1 0.1)
+  ,("Pork",     ProductionInfo pfPork    "Labor" "Pig"     1 0.1)
+  ,("Beef",     ProductionInfo pfBeef    "Labor" "Cow"     1 0.1)
+  ,("Mutton",   ProductionInfo pfMutton  "Labor" "Sheep"   1 0.1)
+  ,("Leather",  ProductionInfo pfLeather "Labor" "Cow"     1 0.1)
+  ,("Wool",     ProductionInfo pfWool    "Labor" "Sheep"   1 0.1)
+  ,("Labor",    ProductionInfo pfWool    ""      ""        1 0.1)
  ]
 
 ufWelfare = U.CobbDouglas 0.5
@@ -62,7 +74,10 @@ utree =
       (LeafR ("Wool", 8.0))
       (LeafR ("Leather", 10.0)))
 
-testprices = E.fromSeq [("Wheat", 3.0), ("Rice", 5.0), ("Pork", 10.0), ("Beef", 15.0), ("Mutton", 18.0), ("Wool", 8.0), ("Leather", 10.0)]
+testprices = E.fromSeq [("Wheat", 3.0), ("Rice", 5.0), ("Pork", 10.0), ("Beef", 15.0), ("Mutton", 18.0), ("Wool", 8.0), ("Leather", 10.0),
+         ("Pig", 8), ("Cow", 12), ("Sheep", 14)]
+
+prodprices = E.insert "Labor" 30.0 testprices
 
 showMarket = putStrLn . concatMap showEconomy $ runEconomy
 
