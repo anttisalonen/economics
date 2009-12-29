@@ -7,12 +7,9 @@ import Libaddutil.BinTree
 
 import qualified Production as P
 import qualified Utility as U
-import Types
-import Cost
-import Curve
 import MarketHelpers
 import MarketTypes
-import UtilityTree
+import Market
 
 productionmap = E.fromSeq 
  [
@@ -61,4 +58,12 @@ utree =
     (NodeR ("Clothing", ufClothing)
       (LeafR ("Wool", 8.0))
       (LeafR ("Leather", 10.0)))
+
+showMarket = putStrLn . concatMap showEconomy $ runEconomy
+
+showLatestEconomy :: [Economy] -> String
+showLatestEconomy = showEconomy . last
+
+runEconomy :: [Economy]
+runEconomy = take 30 . drop 2 $ iterate stepEconomy initialEconomy
 

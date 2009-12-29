@@ -47,5 +47,5 @@ main = do
         test "Complement" testComplement
 
     runT "Test market" $ do
-        putStrLn . showMarketInfo . last $ runMarket
+        putStrLn . showLatestEconomy $ runEconomy
 

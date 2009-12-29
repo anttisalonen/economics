@@ -16,8 +16,6 @@ import Curve
 import MarketHelpers
 import MarketTypes
 
-showMarket = putStrLn . concatMap showEconomy $ runMarket
-
 showEconomy :: Economy -> String
 showEconomy e = 
   let (qm, pm) = splitMap (market e)
@@ -30,9 +28,6 @@ showMarketInfo (qs, ps) = intercalate "\n" . S.toList . S.rcons "\n" $ E.foldWit
                          in case mp of
                               Nothing -> prev
                               Just p  -> S.rcons (printf "%-20s %9.2f %9.2f" name q p) prev
-
-runMarket :: [Economy]
-runMarket = take 30 . drop 2 $ iterate stepEconomy initialEconomy
 
 stepEconomy :: Economy -> Economy
 stepEconomy e = 
