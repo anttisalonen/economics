@@ -1,6 +1,7 @@
 module UtilityTree(
     weightAllocation, budgetAllocation,
-    resolveAllocation,
+    resolveAllocation, quantityAllocation,
+    buildUtilityTree,
     UtilityTree, MultiplicatorTree)
 where
 
@@ -24,6 +25,23 @@ weightAllocation = g . f
 
 budgetAllocation :: Price -> UtilityTree -> MarketPriceMap
 budgetAllocation b = resolveAllocation b . weightAllocation
+
+quantityAllocation :: MarketPriceMap -> MarketPriceMap -> MarketQuantityMap
+quantityAllocation prices budgets = E.mapWithKey func budgets
+  where func k b = case E.lookupM k prices of
+                     Nothing -> 0
+                     Just p  -> b / p
+
+buildUtilityTree :: ProductName -> UtilityMap -> MarketPriceMap -> UtilityTree
+buildUtilityTree rootname utilities prices = 
+  let val = E.lookupM rootname utilities
+  in case val of
+       Nothing
+         -> LeafR (rootname, E.lookup rootname prices)
+       Just (UtilityInfo uf o1 o2) 
+         -> NodeR (rootname, uf) 
+                (buildUtilityTree o1 utilities prices) 
+                (buildUtilityTree o2 utilities prices)
 
 f :: UtilityTree -> MiddleTree
 f t@(NodeR (n, u) l r) = NodeR (n, u, p) (f l) (f r)
