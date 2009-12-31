@@ -2,3 +2,6 @@ dist
 .hpc
 *.tix
 tmp
+hpc_*.html
+*.hs.html
+test1
