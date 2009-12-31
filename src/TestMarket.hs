@@ -33,9 +33,9 @@ pfPig = P.Complement 1 0.4
 pfCow = P.Complement 1 0.2
 pfSheep = P.Complement 1 0.3
 pfPork = P.Complement 1 3.0
-pfBeef = P.Complement 1 2.0
+pfBeef = P.CobbDouglas 1 0.25 0.25
 pfMutton = P.Complement 1 3.0
-pfLeather = P.Complement 1 0.5
+pfLeather = P.CobbDouglas 1 0.25 0.25
 pfWool = P.Complement 1 0.5
 
 productionmap = E.fromSeq 
@@ -58,7 +58,7 @@ ufClothing = U.CobbDouglas 0.75
 ufFood = U.CobbDouglas 0.25
 ufVegetables = U.CobbDouglas 0.5
 ufMeat = U.CobbDouglas 0.4
-ufOtherMeat = U.CobbDouglas 0.4
+ufOtherMeat = U.Substitute 1.5
 
 utilitymap = E.fromSeq 
  [
@@ -71,7 +71,7 @@ utilitymap = E.fromSeq
  ]
 
 initialEconomy :: Economy
-initialEconomy = mkEconomy 100 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 100)])
+initialEconomy = mkEconomy 10 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 100)])
 
 utree = 
   NodeR ("Welfare", ufWelfare)
