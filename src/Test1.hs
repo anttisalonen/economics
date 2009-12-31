@@ -9,6 +9,7 @@ import ProductionTest
 import SupplyTest
 import CostTest
 import TestMarket
+import UtilityTest
 
 main = do
     let runT s a = putStrLn s >> a
@@ -49,3 +50,7 @@ main = do
     runT "Test market" $ do
         putStrLn . showLatestEconomy $ runEconomy
         -- test "Utility tree" testUtree
+
+    runT "Utility" $ do
+        check "factors" prop_factors1
+        test "test4a4" test4a4
