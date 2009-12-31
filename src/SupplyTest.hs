@@ -9,11 +9,10 @@ import Test.HUnit
 import TestUtils
 import Types
 import Curve
-import Supply
 
-f1 = ExponentialFunction 2 0.5 0
-f2 = LinearFunction (-2) 100
-f3 = LinearFunction 1 0
+f1 = [ExponentialFunction 2 0.5 0]
+f2 = [LinearFunction (-2) 100]
+f3 = [LinearFunction 1 0]
 -- g1 = curveToPol f1
 -- g2 = curveToPol f2
 -- g3 = curveToPol f3

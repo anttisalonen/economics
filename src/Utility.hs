@@ -77,19 +77,22 @@ factorsL _ _ _ = error "TODO: utility factors for multiple inputs not defined"
 
 demandCurve :: UtilityFunction -> Price -> Price -> Price -> (DemandCurve, DemandCurve)
 demandCurve (CobbDouglas a) i _ _ =
-  (ExponentialFunction (-1) (a * i) 0, ExponentialFunction (-1) ((1 - a) * i) 0)
+  (mkCurve $ ExponentialFunction (-1) (a * i) 0, mkCurve $ ExponentialFunction (-1) ((1 - a) * i) 0)
 demandCurve (Substitute a) i px py =
   let prefer1 = sub1 a px py
-      c1 = ExponentialFunction (-1) i 0
-      c2 = LinearFunction (1 / 0) 0
+      c1 = mkCurve $ ExponentialFunction (-1) i 0
+      c2 = mkCurve $ LinearFunction (1 / 0) 0
       cx = if prefer1     then c1 else c2
       cy = if not prefer1 then c1 else c2
   in (cx, cy)
 demandCurve (Complement a) i _ _ =
-  (ExponentialFunction (-1) (a * i) 0, ExponentialFunction (-1) (i / a) 0)
+  (mkCurve $ ExponentialFunction (-1) (a * i) 0, mkCurve $ ExponentialFunction (-1) (i / a) 0)
 
 demandQuantity :: DemandCurve -> Price -> Quantity
 demandQuantity = lookupX
+
+demandPrice :: DemandCurve -> Quantity -> Price
+demandPrice = lookupY
 
 utility :: UtilityFunction -> Quantity -> Quantity -> Flt
 utility (CobbDouglas a) = cobbDouglasUtility a

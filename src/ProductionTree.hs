@@ -1,15 +1,43 @@
-module ProductionTree(requiredInput)
+module ProductionTree(requiredInput, requiredInputs,
+    productionInputDemands)
 where
+
+import Data.Maybe
 
 import qualified Data.Edison.Assoc.StandardMap as E
 
-import Libaddutil.BinTree
-
 import qualified Production as P
 import Cost
-import Types
+import FactorMarket
 import Curve
 import MarketTypes
+
+-- Given a production info map and the market prices, the demand curves for
+-- all inputs are resolved. A demand curve of input x of one market with
+-- output z is of form Px=MRPx (marginal revenue product of x), where Px is 
+-- the price of input x and MRPx = MPx * Pz. MPx is marginal product of x
+-- (partial derivative of the production function w.r.t. input x).
+-- Pz is the output good unit price.
+-- In a fully competitive market MRPx = Px.
+productionInputDemands :: ProductionMap -> MarketQuantityMap -> MarketPriceMap -> MarketDemandMap
+productionInputDemands productions quantities prices = E.foldrWithKey' go E.empty productions
+  where go prodname prodinfo acc = fromMaybe acc $ do
+          m <- requiredInput productions prodname prices
+          let in1 = input1 prodinfo
+          let in2 = input2 prodinfo
+          let iq1 = E.lookupWithDefault maxCurveValue in1 quantities
+          let iq2 = E.lookupWithDefault maxCurveValue in2 quantities
+          op <- E.lookupM prodname prices
+          let prodfunc = productionfunction prodinfo
+          let (c1, c2) = marginalRevenue prodfunc iq1 iq2 
+          return $ E.insertWith (+) in1 (factorDemand op c1) (E.insertWith (+) in2 (factorDemand op c2) acc)
+
+requiredInputs :: ProductionMap -> MarketPriceMap -> MarketQuantityMap
+requiredInputs productions prices = E.foldrWithKey' go E.empty productions
+  where go prodname prodinfo acc = 
+          case requiredInput productions prodname prices of
+            Nothing -> acc
+            Just m  -> E.unionWith (+) m acc
 
 -- Given a product to produce, market prices and a production map, return a 
 -- list of quantities of input required for production.

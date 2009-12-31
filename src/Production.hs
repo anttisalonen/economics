@@ -150,3 +150,4 @@ factorsL pf [p1, p2] q =
   in [c, l]
 factorsL _ _ _ = error "TODO: production factors for multiple inputs not defined"
 
+

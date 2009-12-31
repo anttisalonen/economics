@@ -13,8 +13,8 @@ import Cost
 import Curve
 import MarketTypes
 
-mkEconomy :: Price -> ProductionMap -> UtilityMap -> Economy
-mkEconomy b ps u = Economy b (fmap (\p -> ProductionCentre p 0 0) ps) u (E.fromSeq [])
+mkEconomy :: Price -> ProductionMap -> UtilityMap -> ProductName -> MarketQuantityMap -> Economy
+mkEconomy b ps u rn reg = Economy b ps u rn (E.fromSeq []) (E.fromSeq []) reg
 
 tendLin :: (Num a, Ord a) => a -> a -> a -> a
 tendLin maxchange start target =

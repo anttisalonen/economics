@@ -14,6 +14,19 @@ import MarketTypes
 import UtilityTree
 import Market
 
+{-
+pfRice    = P.Complement  1 0
+pfWheat   = P.Complement  1 0
+pfPig     = P.CobbDouglas 1 0.4  0.1
+pfCow     = P.CobbDouglas 1 0.2  0.3
+pfSheep   = P.CobbDouglas 1 0.3  0.2
+pfPork    = P.CobbDouglas 1 0.25 0.25
+pfBeef    = P.CobbDouglas 1 0.25 0.25
+pfMutton  = P.CobbDouglas 1 0.25 0.25
+pfLeather = P.CobbDouglas 1 0.25 0.25
+pfWool    = P.CobbDouglas 1 0.25 0.25
+-}
+
 pfRice = P.Complement 1 0
 pfWheat = P.Complement 1 0
 pfPig = P.Complement 1 0.4
@@ -41,11 +54,11 @@ productionmap = E.fromSeq
  ]
 
 ufWelfare = U.CobbDouglas 0.5
-ufClothing = U.Substitute 2
+ufClothing = U.CobbDouglas 0.75
 ufFood = U.CobbDouglas 0.25
 ufVegetables = U.CobbDouglas 0.5
-ufMeat = U.Substitute 1.2
-ufOtherMeat = U.Substitute 1.2
+ufMeat = U.CobbDouglas 0.4
+ufOtherMeat = U.CobbDouglas 0.4
 
 utilitymap = E.fromSeq 
  [
@@ -57,7 +70,8 @@ utilitymap = E.fromSeq
   ,("OtherMeat",  UtilityInfo ufOtherMeat  "Beef"       "Mutton")
  ]
 
-initialEconomy = mkEconomy 100 productionmap utilitymap 
+initialEconomy :: Economy
+initialEconomy = mkEconomy 100 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 100)])
 
 utree = 
   NodeR ("Welfare", ufWelfare)
@@ -79,13 +93,21 @@ testprices = E.fromSeq [("Wheat", 3.0), ("Rice", 5.0), ("Pork", 10.0), ("Beef", 
 
 prodprices = E.insert "Labor" 30.0 testprices
 
-showMarket = putStrLn . concatMap showEconomy $ runEconomy
+showRunningEconomy = putStrLn . concatMap showEconomy $ runEconomy
+
+showRunningEconomy' n m = putStrLn . concatMap showEconomy $ runEconomy' n m
+
+nthEconomy :: Int -> Economy
+nthEconomy n = head . drop n $ iterate stepEconomy initialEconomy
 
 showLatestEconomy :: [Economy] -> String
 showLatestEconomy = showEconomy . last
 
 runEconomy :: [Economy]
 runEconomy = take 30 . drop 2 $ iterate stepEconomy initialEconomy
+
+runEconomy' :: Int -> Int -> [Economy]
+runEconomy' n m = take m . drop n $ iterate stepEconomy initialEconomy
 
 testUtree = do
   let w = weightAllocation utree

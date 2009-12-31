@@ -3,22 +3,16 @@ where
 
 import qualified Data.Edison.Assoc.StandardMap as E
 
+import Libaddutil.BinTree
+
 import qualified Production as P
 import qualified Utility as U
 import Types
-import Cost
-import Curve
 
+-- General
 type ProductName = String
 
-type ProductMap a = E.FM ProductName a
-
-data ProductionCentre = ProductionCentre { productioninfo :: ProductionInfo
-                                         , input1quantity :: Flt
-                                         , input2quantity :: Flt
-                                         }
-    deriving (Eq, Show, Read)
-
+-- Production
 data ProductionInfo = ProductionInfo { productionfunction :: P.ProductionFunction,
                                        input1             :: ProductName,
                                        input2             :: ProductName,
@@ -27,17 +21,8 @@ data ProductionInfo = ProductionInfo { productionfunction :: P.ProductionFunctio
                                      }
     deriving (Eq, Show, Read)
 
-type ProductionCentreMap = ProductMap ProductionCentre
-
-type ProductionMap = ProductMap ProductionInfo
-
-data UtilityInfo = UtilityInfo { utilityfunction :: U.UtilityFunction
-                               , output1         :: ProductName
-                               , output2         :: ProductName
-                               }
-    deriving (Eq, Show, Read)
-
-type UtilityMap = ProductMap UtilityInfo
+-- Map types
+type ProductMap a = E.FM ProductName a
 
 type MarketQuantityMap = ProductMap Quantity
 
@@ -47,13 +32,31 @@ type MarketSupplyMap = ProductMap SupplyCurve
 
 type MarketDemandMap = ProductMap DemandCurve
 
-type MarketMap = ProductMap (Quantity, Price)
+type ProductionMap = ProductMap ProductionInfo
 
-data Economy = Economy { budget     :: Flt
-                       , production :: ProductionCentreMap
-                       , utility    :: UtilityMap
-                       , market     :: MarketMap
-                       }
+type UtilityMap = ProductMap UtilityInfo
+
+-- Utility
+data UtilityInfo = UtilityInfo { utilityfunction :: U.UtilityFunction
+                               , output1         :: ProductName
+                               , output2         :: ProductName
+                               }
     deriving (Eq, Show, Read)
 
+type UtilityTree = BinTreeR (ProductName, U.UtilityFunction) (ProductName, Price)
+
+type MiddleTree = BinTreeR (ProductName, U.UtilityFunction, Price) (ProductName, Price)
+
+type MultiplicatorTree = BinTree (ProductName, Flt)
+
+-- Economy
+data Economy = Economy { budget         :: Flt
+                       , productioninfo :: ProductionMap
+                       , utilityinfo    :: UtilityMap
+                       , rootutility    :: ProductName
+                       , marketquantity :: MarketQuantityMap
+                       , marketprice    :: MarketPriceMap
+                       , regenerative   :: MarketQuantityMap
+                       }
+    deriving (Eq, Show, Read)
 

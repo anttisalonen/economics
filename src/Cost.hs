@@ -26,15 +26,15 @@ marginalCosts (_, pf) = marginalCosts' pf
 marginalCosts' :: ProductionFunction -> Rental -> Wage -> MarginalCostFunction
 marginalCosts' (CobbDouglas prod alpha beta) r w =
   if alpha + beta == 0.5
-    then LinearFunction (cobbDouglasCostDerivedConstant prod alpha beta r w) 0
-    else ExponentialFunction (cobbDouglasCostDerivedExponent alpha beta) (cobbDouglasCostDerivedConstant prod alpha beta r w) 0
+    then mkCurve $ LinearFunction (cobbDouglasCostDerivedConstant prod alpha beta r w) 0
+    else mkCurve $ ExponentialFunction (cobbDouglasCostDerivedExponent alpha beta) (cobbDouglasCostDerivedConstant prod alpha beta r w) 0
 marginalCosts' (Substitute prod alpha) r w =
   let dp = r / w
   in if dp < alpha
-       then LinearFunction ((1 / prod) * r) 0
-       else LinearFunction ((1 / prod) * w) 0
+       then mkCurve $ LinearFunction ((1 / prod) * r) 0
+       else mkCurve $ LinearFunction ((1 / prod) * w) 0
 marginalCosts' (Complement prod alpha) r w =
-  LinearFunction ((alpha / prod) * r + (1 / prod) * w) 0
+  mkCurve $ LinearFunction ((alpha / prod) * r + (1 / prod) * w) 0
 
 marginalCostsMRTS :: ProductionFunction -> Flt -> MarginalCostFunction
 marginalCostsMRTS p mrts = marginalCosts' p 1 mrts

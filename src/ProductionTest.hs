@@ -34,7 +34,7 @@ test73 =
 
 test83 =
   let fc = 100
-      mc = LinearFunction 2 0
+      mc = [LinearFunction 2 0]
       pf = CobbDouglas (sqrt 2) 0.25 0.25
       cf = (fc, pf)
       r = 1
@@ -54,7 +54,7 @@ test83 =
     assertBool ("Production at price 1: " ++ show q3) (closeEnough q3 0.5 0.0001)
 
 test86 =
-  let mc = LinearFunction 2 3
+  let mc = [LinearFunction 2 3]
       p  = 9
       q  = productionQuantity mc p
   in do

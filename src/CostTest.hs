@@ -9,9 +9,9 @@ import Production
 
 testComplement = do
   let p = Complement 1 4
-  assertBool ("Marginal costs 1") (marginalCosts' p 1 1 == LinearFunction 5 0)
-  assertBool ("Marginal costs 2") (marginalCosts' p 1 8 == LinearFunction 12 0)
-  assertBool ("Marginal costs 3") (marginalCosts' p 8 1 == LinearFunction 33 0)
+  assertBool ("Marginal costs 1") (marginalCosts' p 1 1 == [LinearFunction 5 0])
+  assertBool ("Marginal costs 2") (marginalCosts' p 1 8 == [LinearFunction 12 0])
+  assertBool ("Marginal costs 3") (marginalCosts' p 8 1 == [LinearFunction 33 0])
   assertBool ("Cost 1") (cost (0, p) 1 1 100 == 500)
   assertBool ("Cost 2") (cost (0, p) 1 8 100 == 1200)
   assertBool ("Cost 3") (cost (0, p) 8 1 100 == 3300)
@@ -24,10 +24,10 @@ testComplement = do
 
 testSubstitute = do
   let p = Substitute 1 4
-  assertBool ("Marginal costs 1") (marginalCosts' p 3 3 == LinearFunction 3 0)
-  assertBool ("Marginal costs 2") (marginalCosts' p 3 8 == LinearFunction 3 0)
-  assertBool ("Marginal costs 3") (marginalCosts' p 8 3 == LinearFunction 8 0)
-  assertBool ("Marginal costs 4") (marginalCosts' p 8 8 == LinearFunction 8 0)
+  assertBool ("Marginal costs 1") (marginalCosts' p 3 3 == [LinearFunction 3 0])
+  assertBool ("Marginal costs 2") (marginalCosts' p 3 8 == [LinearFunction 3 0])
+  assertBool ("Marginal costs 3") (marginalCosts' p 8 3 == [LinearFunction 8 0])
+  assertBool ("Marginal costs 4") (marginalCosts' p 8 8 == [LinearFunction 8 0])
   assertBool ("Cost 1") (cost (0, p) 3 3 100 == 300)
   assertBool ("Cost 2") (cost (0, p) 30 3 100 == 300)
   assertBool ("Cost 3") (cost (0, p) 3 30 100 == 300)

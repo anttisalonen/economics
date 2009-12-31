@@ -6,19 +6,12 @@ module UtilityTree(
 where
 
 import qualified Data.Edison.Assoc.StandardMap as E
-import qualified Data.Foldable as Foldable
 
 import Libaddutil.BinTree
 
 import qualified Utility as U
 import Types
 import MarketTypes
-
-type UtilityTree = BinTreeR (ProductName, U.UtilityFunction) (ProductName, Price)
-
-type MiddleTree = BinTreeR (ProductName, U.UtilityFunction, Price) (ProductName, Price)
-
-type MultiplicatorTree = BinTree (ProductName, Flt)
 
 weightAllocation :: UtilityTree -> MultiplicatorTree
 weightAllocation = g . f
