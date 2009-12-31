@@ -9,8 +9,8 @@ cobbDouglasUtility a x y = a * log x + (1 - a) * log y
 
 cobbDouglasDemand :: Flt -> ((Flt -> Price -> Quantity), (Flt -> Price -> Quantity))
 cobbDouglasDemand a = (dx, dy)
-  where dx = \i px -> (a / px) * i
-        dy = \i py -> ((1 - a) / py) * i
+  where dx = \i px -> if px == 0 then 1 / maxCurveValue else (a / px) * i
+        dy = \i py -> if py == 0 then 1 / maxCurveValue else ((1 - a) / py) * i
 
 cobbDouglasDemand' :: Flt -> Flt -> ((Price -> Quantity), (Price -> Quantity))
 cobbDouglasDemand' a i = 
@@ -34,8 +34,8 @@ sub1 a px py = px <= a * py
 
 perfectSubstituteDemand :: ((Flt -> Flt -> Price -> Price -> Quantity), (Flt -> Flt -> Price -> Price -> Quantity))
 perfectSubstituteDemand = (dx, dy)
-  where dx = \a i py px -> if sub1 a px py       then i / px else 0
-        dy = \a i px py -> if not (sub1 a px py) then i / py else 0
+  where dx = \a i py px -> if sub1 a px py       then if px == 0 then 1 / maxCurveValue else i / px else 0
+        dy = \a i px py -> if not (sub1 a px py) then if py == 0 then 1 / maxCurveValue else i / py else 0
 
 perfectSubstituteDemand' :: Flt -> Flt -> ((Price -> Price -> Quantity), (Price -> Price -> Quantity))
 perfectSubstituteDemand' a i = 
@@ -47,8 +47,8 @@ perfectComplementUtility a x y = min (a * y) x
 
 perfectComplementDemand :: ((Flt -> Flt -> Price -> Price -> Quantity), (Flt -> Flt -> Price -> Price -> Quantity))
 perfectComplementDemand = (dx, dy)
-  where dx = \a i py px -> i * a / (px * a + py)
-        dy = \a i px py -> i     / (px * a + py)
+  where dx = \a i py px -> if (px * a + py) == 0 then 1 / maxCurveValue else i * a / (px * a + py)
+        dy = \a i px py -> if (px * a + py) == 0 then 1 / maxCurveValue else i     / (px * a + py)
 
 perfectComplementDemand' :: Flt -> Flt -> ((Price -> Price -> Quantity), (Price -> Price -> Quantity))
 perfectComplementDemand' a i = 
@@ -81,12 +81,12 @@ demandCurve (CobbDouglas a) i _ _ =
 demandCurve (Substitute a) i px py =
   let prefer1 = sub1 a px py
       c1 = mkCurve $ ExponentialFunction (-1) i 0
-      c2 = mkCurve $ LinearFunction (1 / 0) 0
+      c2 = mkCurve $ LinearFunction maxCurveValue 0
       cx = if prefer1     then c1 else c2
       cy = if not prefer1 then c1 else c2
   in (cx, cy)
 demandCurve (Complement a) i _ _ =
-  (mkCurve $ ExponentialFunction (-1) (a * i) 0, mkCurve $ ExponentialFunction (-1) (i / a) 0)
+  (mkCurve $ ExponentialFunction (-1) (a * i) 0, mkCurve $ ExponentialFunction (-1) (if a == 0 then 1 / maxCurveValue else (i / a)) 0)
 
 demandQuantity :: DemandCurve -> Price -> Quantity
 demandQuantity = lookupX
