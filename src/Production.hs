@@ -2,6 +2,7 @@ module Production
 where
 
 import Types
+import Curve
 
 cobbDouglasProduction :: Flt         -- | Total factor productivity
                       -> Elasticity  -- | Labor output elasticity
@@ -75,7 +76,9 @@ cobbDouglasMinimizeCost' :: Flt
 cobbDouglasMinimizeCost' productivity a b rental wage quantity =
   let k = (((a * wage)   / (b * rental)) ** (b / (a + b))) * ((quantity / productivity) ** (1 / (a + b)))
       l = (((b * rental) / (a * wage))   ** (a / (a + b))) * ((quantity / productivity) ** (1 / (a + b)))
-  in (k, l)
+      k' = if b * rental == 0 || a + b == 0 || productivity == 0 then maxCurveValue else k
+      l' = if a * wage   == 0 || a + b == 0 || productivity == 0 then maxCurveValue else l
+  in (k', l')
 
 -- f :: CobbDouglasProduction -> Price -> Price -> Quantity -> (Quantity, Quantity)
 
@@ -94,9 +97,13 @@ substituteMinimizeCost' :: Flt
                         -> (Quantity, Quantity)
 substituteMinimizeCost' prod a rental wage q =
   let dp = rental / wage
-  in if dp < a
-       then (q / prod, 0)
-       else (0, q / prod)
+  in if prod == 0 
+       then if dp < a
+              then (maxCurveValue, 0)
+              else (0, maxCurveValue)
+       else if dp < a
+              then (q / prod, 0)
+              else (0, q / prod)
 
 substituteCost :: Flt        -- | Total factor productivity
                -> Flt        -- | Marginal rate of technical substitution
@@ -112,7 +119,7 @@ complementProduction :: Flt -> Flt -> Quantity -> Quantity -> Quantity
 complementProduction p a k l = p * (min (k / a) l)
 
 complementMinimizeCost' prod a _ _ q =
-  (q / prod * a, q / prod)
+  (if prod * a == 0 then maxCurveValue else q / prod * a, if prod == 0 then maxCurveValue else q / prod)
 
 complementCost :: Flt -> Flt -> Price -> Price -> Quantity -> Price
 complementCost p a r w q =

@@ -1,6 +1,8 @@
 module Utility
 where
 
+import Libaddutil.Misc (clamp)
+
 import Types
 import Curve
 
@@ -89,10 +91,10 @@ demandCurve (Complement a) i _ _ =
   (mkCurve $ ExponentialFunction (-1) (a * i) 0, mkCurve $ ExponentialFunction (-1) (if a == 0 then 1 / maxCurveValue else (i / a)) 0)
 
 demandQuantity :: DemandCurve -> Price -> Quantity
-demandQuantity = lookupX
+demandQuantity = (clamp 0 maxCurveValue .) . lookupX
 
 demandPrice :: DemandCurve -> Quantity -> Price
-demandPrice = lookupY
+demandPrice = (clamp 0 maxCurveValue .) . lookupY
 
 utility :: UtilityFunction -> Quantity -> Quantity -> Flt
 utility (CobbDouglas a) = cobbDouglasUtility a
