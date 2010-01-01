@@ -73,7 +73,7 @@ mrps p k l = (mrp1 p l k, mrp2 p k l)
 
 marginalRevenue :: ProductionFunction -> Labor -> Capital -> (Curve, Curve)
 marginalRevenue (CobbDouglas p a b) l k = 
-  (mkCurve $ ExponentialFunction (a - 1) (p * l ** b * a) 0, mkCurve $ ExponentialFunction (b - 1) (p * k ** a * b) 0)
+  (mkCurve $ ExponentialFunction (a - 1) (max epsilon (p * l ** b * a)) 0, mkCurve $ ExponentialFunction (b - 1) (max epsilon (p * k ** a * b)) 0)
 marginalRevenue (Substitute p a) l k =
   (mkCurve $ LinearFunction 0 (p * a), mkCurve $ LinearFunction 0 p)
 marginalRevenue (Complement p a) l k =
