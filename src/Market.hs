@@ -8,7 +8,7 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Edison.Assoc.StandardMap as E
 import qualified Data.Edison.Seq.SimpleQueue as S
 
-import Libaddutil.Misc (clamp)
+import Libaddutil.Misc (clamp, swap)
 
 import qualified Production as P
 import qualified Utility as U
@@ -33,13 +33,15 @@ showMarketInfo (qs, ps) = intercalate "\n" . S.toList . S.rcons "\n" $ E.foldWit
 
 -- One small step for economy.
 stepEconomy :: Economy -> Economy
+stepEconomy = (stepPrices . uncurry stepProd . swap . stepDemand . regenerate)
+
+{-
 stepEconomy e0 = 
   let e = regenerate e0 
       (e', prod')    = stepDemand e -- demand consumes goods, production retrieves inputs
       e'' = stepProd prod' e'  -- supply sets input prices and supplies products
   in stepPrices e'' -- demand sets prices
-
--- stepEconomy = (stepPrices . uncurry stepProd . swap . stepDemand . regenerate)
+-}
 
 -- Generates regenerative resources.
 regenerate :: Economy -> Economy
@@ -84,6 +86,13 @@ stepProd' prods prices inputs mquantities =
       supplies = buildProductMap $ concatMap (uncurry (mkSupply prices)) (E.toSeq prods)
   in E.unionWith (+) rest mq'
 
+produce :: ProductionMap 
+        -> MarketPriceMap 
+        -> MarketSupplyMap 
+        -> ProductName 
+        -> ProductionInfo 
+        -> (MarketQuantityMap, MarketQuantityMap) 
+        -> (MarketQuantityMap, MarketQuantityMap)
 produce prods prices supplies pname prod (inp, acc) = fromMaybe (inp, acc) $ do
   scurve <- E.lookupM pname supplies
   prodinfo <- E.lookupM pname prods
@@ -108,14 +117,16 @@ stepPrices e = e{marketprice = stepPrices' (utilityinfo e) (marketquantity e) (p
 
 stepPrices' :: UtilityMap -> MarketQuantityMap -> ProductionMap -> MarketPriceMap -> Price -> MarketPriceMap
 stepPrices' utilities quantities productions prices i =
-  E.foldrWithKey' go prices quantities
-      where go pname q prcs = fromMaybe prcs $ do
-                dcurve <- E.lookupM pname demands
-                let p = clamp 0 maxCurveValue (U.demandPrice dcurve q)
-                return $ E.insert pname p prcs
-            demands = E.unionWith (+) consdemands inpdemands
-            consdemands = buildProductMap $ concatMap (mkDemand prices i) (E.elements utilities)
-            inpdemands = productionInputDemands productions quantities prices
+  E.foldrWithKey' (setPrice demands) prices quantities
+   where demands = E.unionWith (+) consdemands inpdemands
+         consdemands = buildProductMap $ concatMap (mkDemand prices i) (E.elements utilities)
+         inpdemands = productionInputDemands productions quantities prices
+
+setPrice :: MarketDemandMap -> ProductName -> Quantity -> MarketPriceMap -> MarketPriceMap
+setPrice demands pname q prcs = fromMaybe prcs $ do
+  dcurve <- E.lookupM pname demands
+  let p = clamp 0 maxCurveValue (U.demandPrice dcurve q)
+  return $ E.insert pname p prcs
 
 runKL :: ProductionMap -> UtilityMap -> MarketPriceMap -> Price -> MarketQuantityMap -> MarketPriceMap -> (MarketQuantityMap, MarketPriceMap)
 runKL prods utilities newprices i quantities prices = run prods utilities i quantities (E.union newprices prices)
