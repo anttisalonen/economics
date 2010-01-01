@@ -27,9 +27,11 @@ main = do
         test "Substitute" testSubstitute
         test "Complement" testComplement
 
+{-
     runT "Test market" $ do
         putStrLn . showLatestEconomy $ runEconomy
         -- test "Utility tree" testUtree
+-}
 
     runT "Utility" $ do
         check "factors" prop_factors1
