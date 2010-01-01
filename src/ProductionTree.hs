@@ -1,5 +1,5 @@
 module ProductionTree(requiredInput, requiredInputs,
-    productionInputDemands)
+    productionInputDemands, addDemand)
 where
 
 import Data.Maybe
@@ -20,17 +20,20 @@ import MarketTypes
 -- Pz is the output good unit price.
 -- In a fully competitive market MRPx = Px.
 productionInputDemands :: ProductionMap -> MarketQuantityMap -> MarketPriceMap -> MarketDemandMap
-productionInputDemands productions quantities prices = E.foldrWithKey' go E.empty productions
-  where go prodname prodinfo acc = fromMaybe acc $ do
-          m <- requiredInput productions prodname prices
-          let in1 = input1 prodinfo
-          let in2 = input2 prodinfo
-          let iq1 = E.lookupWithDefault maxCurveValue in1 quantities
-          let iq2 = E.lookupWithDefault maxCurveValue in2 quantities
-          op <- E.lookupM prodname prices
-          let prodfunc = productionfunction prodinfo
-          let (c1, c2) = marginalRevenue prodfunc iq1 iq2 
-          return $ E.insertWith (+) in1 (factorDemand op c1) (E.insertWith (+) in2 (factorDemand op c2) acc)
+productionInputDemands productions quantities prices = E.foldrWithKey' (addDemand productions quantities prices) E.empty productions
+
+addDemand :: ProductionMap -> MarketQuantityMap -> MarketPriceMap -> ProductName -> ProductionInfo -> MarketDemandMap -> MarketDemandMap
+addDemand productions quantities prices prodname prodinfo acc = fromMaybe acc $ do
+  let in1 = input1 prodinfo
+  let in2 = input2 prodinfo
+  let iq1 = E.lookupWithDefault maxCurveValue in1 quantities
+  let iq2 = E.lookupWithDefault maxCurveValue in2 quantities
+  op <- E.lookupM prodname prices
+  let prodfunc = productionfunction prodinfo
+  let (c1, c2) = marginalRevenue prodfunc iq1 iq2 
+  return $ 
+    (if null in1 then id else (E.insertWith (+) in1 (factorDemand op c1))) 
+   ((if null in2 then id else (E.insertWith (+) in2 (factorDemand op c2))) acc)
 
 requiredInputs :: ProductionMap -> MarketPriceMap -> MarketQuantityMap
 requiredInputs productions prices = E.foldrWithKey' go E.empty productions
