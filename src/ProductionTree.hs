@@ -59,8 +59,8 @@ f' acc productions name prices = do
   let (f1, f2) = P.factors pf ip1 ip2 (productionQuantity curve price)
   t1 <- if null i1 
           then return acc 
-          else f' (E.insertWith (+) i1 (f1 * ip1) acc) productions i1 prices
+          else f' (E.insertWith (+) i1 f1 acc) productions i1 prices
   if null i2 
     then return t1 
-    else f' (E.insertWith (+) i2 (f2 * ip2) t1) productions i2 prices
+    else f' (E.insertWith (+) i2 f2 t1) productions i2 prices
 
