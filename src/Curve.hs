@@ -17,7 +17,7 @@ data CurveComponent = LinearFunction Flt Flt
     deriving (Eq, Show, Read)
 
 maxCurveValue :: Flt
-maxCurveValue = 1e17
+maxCurveValue = 1e7
 
 mkCurve = (:[])
 
@@ -59,7 +59,8 @@ curveToPol' (ExponentialFunction a b c) = [(b, a), (c, 0)]
 
 polToCurve :: Polynomial Flt -> Curve
 polToCurve p1 = foldl' go [] (getPol p1)
-  where go acc (c, e) | e == 0    = ExponentialFunction 1 0 c:acc
+  where go acc (c, e) | e == 0    = LinearFunction 0 c:acc
+                      | e == 1    = LinearFunction c 0:acc
                       | otherwise = ExponentialFunction e c 0:acc
 
 balance' :: Polynomial Flt -> Polynomial Flt -> Maybe (Flt, Flt)
@@ -85,3 +86,4 @@ instance Num Curve where
   abs = polToCurve . abs . curveToPol
   signum = polToCurve . signum . curveToPol
   fromInteger = polToCurve . fromInteger
+
