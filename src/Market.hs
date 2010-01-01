@@ -76,29 +76,32 @@ stepProd q e = e{marketquantity = stepProd' (productioninfo e) (marketprice e) q
 -- of good to produce is determined.
 -- The quantity is then produced using the inputs. If not enough inputs are
 -- available, a quantity smaller than optimal will be produced.
--- The result is the quantities of all produced goods.
+-- The result is the quantities of all produced goods. The unused inputs
+-- are returned to the market.
 stepProd' :: ProductionMap -> MarketPriceMap -> MarketQuantityMap -> MarketQuantityMap -> MarketQuantityMap
 stepProd' prods prices inputs mquantities = 
-  snd $ E.foldrWithKey' go (inputs, mquantities) prods
-      where go pname prod (inp, acc) = fromMaybe (inp, acc) $ do
-                scurve <- E.lookupM pname supplies
-                prodinfo <- E.lookupM pname prods
-                let prodfunc = productionfunction prodinfo
-                let in1 = input1 prodinfo
-                let in2 = input2 prodinfo
-                let oprice = E.lookupWithDefault maxCurveValue pname prices
-                let ip1 = E.lookupWithDefault maxCurveValue in1 prices
-                let ip2 = E.lookupWithDefault maxCurveValue in2 prices
-                let avail_iq1 = E.lookupWithDefault 0 in1 inp
-                let avail_iq2 = E.lookupWithDefault 0 in2 inp
-                let wishq = clamp 0 maxCurveValue (productionQuantity scurve oprice)
-                let (req_iq1, req_iq2) = P.factors prodfunc ip1 ip2 wishq
-                let (real_iq1, real_iq2) = (min req_iq1 avail_iq1, min req_iq2 avail_iq2)
-                let prodq = P.production prodfunc real_iq1 real_iq2
-                let acc' = E.insertWith (+) pname prodq acc
-                let restinputs = E.adjust (\x -> x - real_iq1) in1 (E.adjust (\x -> x - real_iq2) in2 inp)
-                return (restinputs, acc')
-            supplies = buildProductMap $ concatMap (uncurry (mkSupply prices)) (E.toSeq prods)
+  let (rest, mq') = E.foldrWithKey' (produce prods prices supplies) (inputs, mquantities) prods
+      supplies = buildProductMap $ concatMap (uncurry (mkSupply prices)) (E.toSeq prods)
+  in E.unionWith (+) rest mq'
+
+produce prods prices supplies pname prod (inp, acc) = fromMaybe (inp, acc) $ do
+  scurve <- E.lookupM pname supplies
+  prodinfo <- E.lookupM pname prods
+  let prodfunc = productionfunction prodinfo
+  let in1 = input1 prodinfo
+  let in2 = input2 prodinfo
+  let oprice = E.lookupWithDefault maxCurveValue pname prices
+  let ip1 = E.lookupWithDefault maxCurveValue in1 prices
+  let ip2 = E.lookupWithDefault maxCurveValue in2 prices
+  let avail_iq1 = E.lookupWithDefault 0 in1 inp
+  let avail_iq2 = E.lookupWithDefault 0 in2 inp
+  let wishq = clamp 0 maxCurveValue (productionQuantity scurve oprice)
+  let (req_iq1, req_iq2) = P.factors prodfunc ip1 ip2 wishq
+  let (real_iq1, real_iq2) = (min req_iq1 avail_iq1, min req_iq2 avail_iq2)
+  let prodq = P.production prodfunc real_iq1 real_iq2
+  let acc' = E.insertWith (+) pname prodq acc
+  let restinputs = E.adjust (\x -> x - real_iq1) in1 (E.adjust (\x -> x - real_iq2) in2 inp)
+  return (restinputs, acc')
 
 stepPrices :: Economy -> Economy
 stepPrices e = e{marketprice = stepPrices' (utilityinfo e) (marketquantity e) (productioninfo e) (marketprice e) (budget e)}
