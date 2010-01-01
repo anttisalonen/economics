@@ -9,12 +9,14 @@ import Libaddutil.BinTree
 
 import qualified Production as P
 import qualified Utility as U
+import Cost
+import Curve
 import MarketHelpers
 import MarketTypes
+import ProductionTree
 import UtilityTree
 import Market
 
-{-
 pfRice    = P.Complement  1 0
 pfWheat   = P.Complement  1 0
 pfPig     = P.CobbDouglas 1 0.4  0.1
@@ -25,8 +27,8 @@ pfBeef    = P.CobbDouglas 1 0.25 0.25
 pfMutton  = P.CobbDouglas 1 0.25 0.25
 pfLeather = P.CobbDouglas 1 0.25 0.25
 pfWool    = P.CobbDouglas 1 0.25 0.25
--}
 
+{-
 pfRice = P.Complement 1 0
 pfWheat = P.Complement 1 0
 pfPig = P.Complement 1 0.4
@@ -35,8 +37,9 @@ pfSheep = P.Complement 1 0.3
 pfPork = P.Complement 1 3.0
 pfBeef = P.CobbDouglas 1 0.25 0.25
 pfMutton = P.Complement 1 3.0
-pfLeather = P.CobbDouglas 1 0.25 0.25
-pfWool = P.Complement 1 0.5
+pfLeather = P.Substitute 1 1
+pfWool = P.CobbDouglas 1 0.25 0.25
+-}
 
 productionmap = E.fromSeq 
  [
@@ -58,7 +61,7 @@ ufClothing = U.CobbDouglas 0.75
 ufFood = U.CobbDouglas 0.25
 ufVegetables = U.CobbDouglas 0.5
 ufMeat = U.CobbDouglas 0.4
-ufOtherMeat = U.Substitute 1.5
+ufOtherMeat = U.CobbDouglas 0.7
 
 utilitymap = E.fromSeq 
  [
@@ -71,7 +74,7 @@ utilitymap = E.fromSeq
  ]
 
 initialEconomy :: Economy
-initialEconomy = mkEconomy 10 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 100)])
+initialEconomy = mkEconomy 100 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 3.0e5)])
 
 utree = 
   NodeR ("Welfare", ufWelfare)
@@ -116,3 +119,26 @@ testUtree = do
   assertBool ("Budget allocation: " ++ show b) (show b == "fromList [(\"Beef\",0.0),(\"Leather\",0.0),(\"Mutton\",0.0),(\"Pork\",28.125),(\"Rice\",9.375),(\"Wheat\",15.625),(\"Wool\",46.875)]")
   assertBool ("Building utility tree: " ++ show utree) (utree == buildUtilityTree "Welfare" utilitymap testprices)
 
+e = nthEconomy 200
+prices = marketprice e
+productions = productioninfo e
+prods = productions
+quantities = marketquantity e
+p = E.lookup "Pork" prods
+curve = marginalCosts' (productionfunction p) (E.lookup (input1 p) prices) (E.lookup (input2 p) prices)
+pf = productionfunction p
+ip1 = E.lookup (input1 p) prices
+ip2 = E.lookup (input2 p) prices
+pq = productionQuantity curve 0
+supplies = buildProductMap $ concatMap (uncurry (mkSupply prices)) (E.toSeq prods)
+utilities = utilityinfo e
+i = budget e
+consdemands = buildProductMap $ concatMap (mkDemand prices i) (E.elements utilities)
+inpdemands = productionInputDemands productions quantities prices
+demands = E.unionWith (+) consdemands inpdemands
+s1 = E.lookup "Pork" supplies
+d1 = E.lookup "Pork" demands
+sup n = E.lookup n supplies
+dem n = E.lookup n demands
+balanceGood n = balance (E.lookup n supplies) (E.lookup n demands)
+prodkeys = E.keys productions :: [String]
