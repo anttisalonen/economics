@@ -1,6 +1,8 @@
 module Cost
 where
 
+import Libaddutil.Misc (clamp)
+
 import Types
 import Production
 import Curve
@@ -26,25 +28,25 @@ marginalCosts (_, pf) = marginalCosts' pf
 marginalCosts' :: ProductionFunction -> Rental -> Wage -> MarginalCostFunction
 marginalCosts' (CobbDouglas prod alpha beta) r w =
   if alpha + beta == 0.5
-    then mkCurve $ LinearFunction (cobbDouglasCostDerivedConstant prod alpha beta r w) 0
+    then mkCurve $ LinearFunction (epsilon + cobbDouglasCostDerivedConstant prod alpha beta r w) 0
     else mkCurve $ ExponentialFunction (cobbDouglasCostDerivedExponent alpha beta) (cobbDouglasCostDerivedConstant prod alpha beta r w) 0
 marginalCosts' (Substitute prod alpha) r w =
   let dp = r / w
   in if dp < alpha
-       then mkCurve $ LinearFunction ((1 / prod) * r) 0
-       else mkCurve $ LinearFunction ((1 / prod) * w) 0
+       then mkCurve $ LinearFunction (epsilon + (1 / prod) * r) 0
+       else mkCurve $ LinearFunction (epsilon + (1 / prod) * w) 0
 marginalCosts' (Complement prod alpha) r w =
-  mkCurve $ LinearFunction ((alpha / prod) * r + (1 / prod) * w) 0
+  mkCurve $ LinearFunction (epsilon + (alpha / prod) * r + (1 / prod) * w) 0
 
 marginalCostsMRTS :: ProductionFunction -> Flt -> MarginalCostFunction
 marginalCostsMRTS p mrts = marginalCosts' p 1 mrts
 
 productionQuantity :: MarginalCostFunction -> Price -> Quantity
-productionQuantity = lookupX
+productionQuantity = (clamp 0 maxCurveValue .) . lookupX
 
 productionQuantity' :: ProductionFunction -> Rental -> Wage -> Price -> Quantity
 productionQuantity' prodfunc r w p =
-  lookupX (marginalCosts' prodfunc r w) p
+  clamp 0 maxCurveValue $ lookupX (marginalCosts' prodfunc r w) p
 
 cost :: CostFunction -> Rental -> Wage -> Quantity -> Price
 cost (fc, CobbDouglas productivity alpha beta) r w q = fc + (cobbDouglasCost productivity alpha beta r w q)
