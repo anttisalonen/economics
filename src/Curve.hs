@@ -17,7 +17,10 @@ data CurveComponent = LinearFunction Flt Flt
     deriving (Eq, Show, Read)
 
 maxCurveValue :: Flt
-maxCurveValue = 1e7
+maxCurveValue = 1.0e7
+
+epsilon :: Flt
+epsilon = 1.0e-17
 
 mkCurve = (:[])
 
