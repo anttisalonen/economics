@@ -70,7 +70,7 @@ absPol :: (Num a) => Polynomial a -> Polynomial a
 absPol = flipPol (map (\(c, e) -> (abs c, e)))
 
 signumPol :: (Num a) => Polynomial a -> Polynomial a
-signumPol = flipPol (map (\(c, e) -> (signum c, e)))
+signumPol p = flipPol (signum . fst . head) (simplify p)
 
 negatePol :: (Num a) => Polynomial a -> Polynomial a
 negatePol = flipPol (map (\(c, e) -> (negate c, e)))
