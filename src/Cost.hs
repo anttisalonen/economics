@@ -37,6 +37,7 @@ marginalCosts' (Substitute prod alpha) r w =
        else mkCurve $ LinearFunction (epsilon + (1 / prod) * w) 0
 marginalCosts' (Complement prod alpha) r w =
   mkCurve $ LinearFunction (epsilon + (alpha / prod) * r + (1 / prod) * w) 0
+marginalCosts' (Constant prod) _ _ = mkCurve $ LinearFunction (maxCurveValue / prod) (-maxCurveValue)
 
 marginalCostsMRTS :: ProductionFunction -> Flt -> MarginalCostFunction
 marginalCostsMRTS p mrts = marginalCosts' p 1 mrts
@@ -52,4 +53,5 @@ cost :: CostFunction -> Rental -> Wage -> Quantity -> Price
 cost (fc, CobbDouglas productivity alpha beta) r w q = fc + (cobbDouglasCost productivity alpha beta r w q)
 cost (fc, Substitute  productivity alpha)      r w q = fc + (substituteCost productivity alpha r w q)
 cost (fc, Complement  productivity alpha)      r w q = fc + (complementCost productivity alpha r w q)
+cost (fc, Constant    productivity)            _ _ q = fc + (if q > productivity then maxCurveValue else 0)
 

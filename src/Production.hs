@@ -136,17 +136,21 @@ data ProductionFunction = CobbDouglas { tfp   :: Flt
                         | Complement { tfp   :: Flt
                                      , coeff :: Flt
                                      }
+                        | Constant { tfp :: Flt
+                                   }
     deriving (Eq, Show, Read)
 
 production :: ProductionFunction -> Quantity -> Quantity -> Quantity
-production (CobbDouglas productivity alpha beta) = cobbDouglasProduction productivity alpha beta
-production (Substitute productivity alpha) = substituteProduction productivity alpha
-production (Complement productivity alpha) = complementProduction productivity alpha
+production (CobbDouglas productivity alpha beta) k l = cobbDouglasProduction productivity alpha beta k l
+production (Substitute productivity alpha) k l = substituteProduction productivity alpha k l
+production (Complement productivity alpha) k l = complementProduction productivity alpha k l
+production (Constant productivity) _ _ = productivity
 
 factors :: ProductionFunction -> Rental -> Wage -> Quantity -> (Capital, Labor)
-factors (CobbDouglas prod alpha beta) = cobbDouglasMinimizeCost' prod alpha beta
-factors (Substitute  prod alpha)      = substituteMinimizeCost' prod alpha
-factors (Complement  prod alpha)      = complementMinimizeCost' prod alpha
+factors (CobbDouglas prod alpha beta) r w q = cobbDouglasMinimizeCost' prod alpha beta r w q
+factors (Substitute  prod alpha)      r w q = substituteMinimizeCost' prod alpha r w q
+factors (Complement  prod alpha)      r w q = complementMinimizeCost' prod alpha r w q
+factors (Constant prod)               _ _ _ = (0, 0)
 
 factorsMRTS :: ProductionFunction -> Flt -> Quantity -> (Capital, Labor)
 factorsMRTS p mrts = factors p 1 mrts
