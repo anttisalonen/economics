@@ -77,8 +77,8 @@ marginalRevenue (CobbDouglas p a b) l k =
 marginalRevenue (Substitute p a) l k =
   (mkCurve $ LinearFunction 0 (p * a), mkCurve $ LinearFunction 0 p)
 marginalRevenue (Complement p a) l k =
-  (mkCurve $ LinearFunction 0 (p / a),
-   mkCurve $ LinearFunction 0 p)
+  (mkCurve $ LinearFunction (-epsilon) (p / a),
+   mkCurve $ LinearFunction (-epsilon) p)
 
 factorDemand :: Price -> Curve -> Curve
 factorDemand p c = [LinearFunction 0 p] * c
