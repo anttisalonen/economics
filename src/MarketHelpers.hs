@@ -64,8 +64,8 @@ mkDemand ps i (UtilityInfo uf o1 o2) =
 -- on the market as well as the production info values.
 mkSupply :: MarketPriceMap -> ProductName -> ProductionInfo -> [(ProductName, SupplyCurve)]
 mkSupply ps pn (ProductionInfo pf i1 i2 maxchange changecoeff) =
-  let p1 = E.lookupWithDefault maxCurveValue i1 ps
-      p2 = E.lookupWithDefault maxCurveValue i2 ps
+  let p1 = if null i1 then 0 else E.lookupWithDefault maxCurveValue i1 ps
+      p2 = if null i2 then 0 else E.lookupWithDefault maxCurveValue i2 ps
   in [(pn, marginalCosts' pf p1 p2)]
 
 -- | Given current quantity, change coefficients and supply and demand
