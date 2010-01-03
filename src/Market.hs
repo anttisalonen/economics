@@ -23,54 +23,74 @@ import UtilityTree
 
 showEconomy :: Economy -> String
 showEconomy e = 
-  showMarketInfo (marketquantity e, marketprice e)
+  showMarketInfo (marketquantity e) (marketprice e)
 
-showMarketInfo :: (MarketQuantityMap, MarketPriceMap) -> String
-showMarketInfo (qs, ps) = intercalate "\n" . S.toList . S.rcons "\n" $ E.foldWithKey' go (S.singleton (printf "%-21s %-12s %s" "Name" "Quantity" "Price")) qs
+showEconomyData :: MarketQuantityMap -> MarketQuantityMap -> MarketQuantityMap -> String
+showEconomyData consumed produced usedinputs = showData (printf "%-25s %8s %9s  %s" "Name" "Produced" "Consumed" "Used as input") go produced
+  where go :: ProductName -> Quantity -> S.Seq String -> S.Seq String
+        go name q prev = let p = E.lookupWithDefault 0 name consumed
+                             u = E.lookupWithDefault 0 name usedinputs
+                         in S.rcons (printf "%-20s %9.2f %9.2f %9.2f" name q p u) prev
+
+showEconomyWithData :: (Economy, MarketQuantityMap, MarketQuantityMap, MarketQuantityMap) -> String
+showEconomyWithData (e, c, p, u) = showEconomy e ++ showEconomyData c p u
+
+showData
+  :: (Ord k) =>
+     String 
+  -> (k -> a -> S.Seq String -> S.Seq String)
+  -> E.FM k a
+  -> String
+showData initline go xs = intercalate "\n" . S.toList . S.rcons "\n" $ E.foldWithKey' go (S.singleton (initline)) xs
+
+showMarketInfo :: MarketQuantityMap -> MarketPriceMap -> String
+showMarketInfo qs ps = showData (printf "%-21s %-12s %s" "Name" "Quantity" "Price") go qs
   where go :: ProductName -> Quantity -> S.Seq String -> S.Seq String
         go name q prev = let p = E.lookupWithDefault maxCurveValue name ps
                          in S.rcons (printf "%-20s %9.2f %9.2f" name q p) prev
 
+dropThird :: (a, b, c) -> (a, b)
+dropThird (a, b, c) = (a, b)
+
 -- One small step for economy.
 stepEconomy :: Economy -> Economy
-stepEconomy = (stepPrices . uncurry stepProd . swap . stepDemand . regenerate)
+stepEconomy e = let (e', _, _, _) = stepEconomy' e in e'
 
-{-
-stepEconomy e0 = 
-  let e = regenerate e0 
-      (e', prod')    = stepDemand e -- demand consumes goods, production retrieves inputs
-      e'' = stepProd prod' e'  -- supply sets input prices and supplies products
-  in stepPrices e'' -- demand sets prices
--}
+stepEconomy' :: Economy -> (Economy, MarketQuantityMap, MarketQuantityMap, MarketQuantityMap)
+stepEconomy' e = 
+  let (e', inputs, consumed) = stepDemand (regenerate e)
+      (e'', produced, usedinputs) = stepProd inputs e'
+  in (stepPrices e'', consumed, produced, usedinputs)
 
 -- Generates regenerative resources.
 regenerate :: Economy -> Economy
-regenerate e = e{marketquantity = deposit (regenerative e) (marketquantity e)}
+regenerate e = e{marketquantity = E.union (regenerative e) (marketquantity e)}
 
 -- Updates economy by consuming all consumer goods and production factors.
 -- Available production factors are returned as well.
-stepDemand :: Economy -> (Economy, MarketQuantityMap)
+stepDemand :: Economy -> (Economy, MarketQuantityMap, MarketQuantityMap)
 stepDemand e = 
-  let (mq, prodinputs) = stepDemand' (utilityinfo e) (productioninfo e) (marketprice e) (marketquantity e) (rootutility e) (budget e)
-  in (e{marketquantity = mq}, prodinputs)
+  let (mq, prodinputs, consumed) = stepDemand' (utilityinfo e) (productioninfo e) (marketprice e) (marketquantity e) (rootutility e) (budget e)
+  in (e{marketquantity = mq}, prodinputs, consumed)
 
 -- Removes the production factors from market needed for production.
 -- Then removes the consumed goods from market.
 -- Returns new market status and the list of production factors retrieved
 -- from the market.
-stepDemand' :: UtilityMap -> ProductionMap -> MarketPriceMap -> MarketQuantityMap -> ProductName -> Price -> (MarketQuantityMap, MarketQuantityMap)
+stepDemand' :: UtilityMap -> ProductionMap -> MarketPriceMap -> MarketQuantityMap -> ProductName -> Price -> (MarketQuantityMap, MarketQuantityMap, MarketQuantityMap)
 stepDemand' utilities prods mprices mquantities rootname i = 
   let (mq', prodinputs) = withdraw (requiredInputs prods mprices) mquantities -- deduct inputs
-      mq'' = consume (quantityAllocation mprices                    -- consumption
-                (budgetAllocation i                                     -- (actually bought quantities ignored)
+      (mq'', consumed) = withdraw (quantityAllocation mprices                    -- consumption
+                (budgetAllocation i
                    (buildUtilityTree 
                        rootname utilities mprices)))
                 mq'
-  in (mq'', prodinputs)
+  in (mq'', prodinputs, consumed)
 
 -- stepProd produces goods as given by inputs and market prices.
-stepProd :: MarketQuantityMap -> Economy -> Economy
-stepProd q e = e{marketquantity = stepProd' (productioninfo e) (marketprice e) q (marketquantity e)}
+stepProd :: MarketQuantityMap -> Economy -> (Economy, MarketQuantityMap, MarketQuantityMap)
+stepProd q e = let (rest, produced, usedinputs) = stepProd' (productioninfo e) (marketprice e) q
+ in (e{marketquantity = E.unionWith (+) rest (E.unionWith (+) produced (marketquantity e))}, produced, usedinputs)
 
 -- Production functions and market prices are used for defining the supply
 -- curves. (Market prices are used for finding the production factor prices.)
@@ -78,22 +98,20 @@ stepProd q e = e{marketquantity = stepProd' (productioninfo e) (marketprice e) q
 -- of good to produce is determined.
 -- The quantity is then produced using the inputs. If not enough inputs are
 -- available, a quantity smaller than optimal will be produced.
--- The result is the quantities of all produced goods. The unused inputs
--- are returned to the market.
-stepProd' :: ProductionMap -> MarketPriceMap -> MarketQuantityMap -> MarketQuantityMap -> MarketQuantityMap
-stepProd' prods prices inputs mquantities = 
-  let (rest, mq') = E.foldrWithKey' (produce prods prices supplies) (inputs, mquantities) prods
-      supplies = buildProductMap $ concatMap (uncurry (mkSupply prices)) (E.toSeq prods)
-  in E.unionWith (+) rest mq'
+-- Returns (unused inputs, produced goods).
+stepProd' :: ProductionMap -> MarketPriceMap -> MarketQuantityMap -> (MarketQuantityMap, MarketQuantityMap, MarketQuantityMap)
+stepProd' prods prices inputs = 
+  E.foldrWithKey' (produce prods prices supplies) (inputs, E.empty, E.empty) prods
+      where supplies = buildProductMap $ concatMap (uncurry (mkSupply prices)) (E.toSeq prods)
 
 produce :: ProductionMap 
         -> MarketPriceMap 
         -> MarketSupplyMap 
         -> ProductName 
         -> ProductionInfo 
-        -> (MarketQuantityMap, MarketQuantityMap) 
-        -> (MarketQuantityMap, MarketQuantityMap)
-produce prods prices supplies pname prod (inp, acc) = fromMaybe (inp, acc) $ do
+        -> (MarketQuantityMap, MarketQuantityMap, MarketQuantityMap) 
+        -> (MarketQuantityMap, MarketQuantityMap, MarketQuantityMap)
+produce prods prices supplies pname prod (inp, acc, usedinp) = fromMaybe (inp, acc, usedinp) $ do
   scurve <- E.lookupM pname supplies
   prodinfo <- E.lookupM pname prods
   let prodfunc = productionfunction prodinfo
@@ -109,8 +127,9 @@ produce prods prices supplies pname prod (inp, acc) = fromMaybe (inp, acc) $ do
   let (real_iq1, real_iq2) = (min req_iq1 avail_iq1, min req_iq2 avail_iq2)
   let prodq = P.production prodfunc real_iq1 real_iq2
   let acc' = E.insertWith (+) pname prodq acc
-  let restinputs = E.adjust (\x -> x - real_iq1) in1 (E.adjust (\x -> x - real_iq2) in2 inp)
-  return (restinputs, acc')
+  let restinputs = E.adjust (subtract real_iq1) in1 (E.adjust (subtract real_iq2) in2 inp)
+  let usedinputs = E.insertWith (+) in1 real_iq1 (E.insertWith (+) in2 real_iq2 usedinp)
+  return (restinputs, acc', usedinputs)
 
 stepPrices :: Economy -> Economy
 stepPrices e = e{marketprice = stepPrices' (utilityinfo e) (marketquantity e) (productioninfo e) (marketprice e) (budget e)}

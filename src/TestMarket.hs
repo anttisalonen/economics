@@ -74,7 +74,7 @@ utilitymap = E.fromSeq
  ]
 
 initialEconomy :: Economy
-initialEconomy = mkEconomy 100 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 3.0e5)])
+initialEconomy = mkEconomy 100 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 30000)])
 
 utree = 
   NodeR ("Welfare", ufWelfare)
@@ -96,18 +96,21 @@ testprices = E.fromSeq [("Wheat", 3.0), ("Rice", 5.0), ("Pork", 10.0), ("Beef", 
 
 prodprices = E.insert "Labor" 30.0 testprices
 
-showRunningEconomy = putStrLn . concatMap showEconomy $ runEconomy
-
-showRunningEconomy' n m = putStrLn . concatMap showEconomy $ runEconomy' n m
-
 nthEconomy :: Int -> Economy
 nthEconomy n = head . drop n $ iterate stepEconomy initialEconomy
+
+showRunningEconomy n m = mapM_ putStrLn . map showEconomyWithData . take m . drop n $ runEconomyData initialEconomy
 
 showLatestEconomy :: [Economy] -> String
 showLatestEconomy = showEconomy . last
 
+runEconomyData :: Economy -> [(Economy, MarketQuantityMap, MarketQuantityMap, MarketQuantityMap)]
+runEconomyData e = 
+  let t@(e', consumed, produced, used) = stepEconomy' e
+  in t : runEconomyData e'
+
 runEconomy :: [Economy]
-runEconomy = take 30 . drop 2 $ iterate stepEconomy initialEconomy
+runEconomy = take 30 $ iterate stepEconomy initialEconomy
 
 runEconomy' :: Int -> Int -> [Economy]
 runEconomy' n m = take m . drop n $ iterate stepEconomy initialEconomy
