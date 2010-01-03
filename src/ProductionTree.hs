@@ -20,10 +20,10 @@ import MarketTypes
 -- Pz is the output good unit price.
 -- In a fully competitive market MRPx = Px.
 productionInputDemands :: ProductionMap -> MarketQuantityMap -> MarketPriceMap -> MarketDemandMap
-productionInputDemands productions quantities prices = E.foldrWithKey' (addDemand productions quantities prices) E.empty productions
+productionInputDemands productions quantities prices = E.foldrWithKey' (addDemand quantities prices) E.empty productions
 
-addDemand :: ProductionMap -> MarketQuantityMap -> MarketPriceMap -> ProductName -> ProductionInfo -> MarketDemandMap -> MarketDemandMap
-addDemand productions quantities prices prodname prodinfo acc = fromMaybe acc $ do
+addDemand :: MarketQuantityMap -> MarketPriceMap -> ProductName -> ProductionInfo -> MarketDemandMap -> MarketDemandMap
+addDemand quantities prices prodname prodinfo acc = fromMaybe acc $ do
   let in1 = input1 prodinfo
   let in2 = input2 prodinfo
   let iq1 = E.lookupWithDefault maxCurveValue in1 quantities
