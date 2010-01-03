@@ -76,7 +76,7 @@ negatePol :: (Num a) => Polynomial a -> Polynomial a
 negatePol = flipPol (map (\(c, e) -> (negate c, e)))
 
 instance (Eq a, Ord a, Num a) => Num (Polynomial a) where
-  p1 + p2 = mkPol (getPol p1 ++ getPol p2)
+  p1 + p2 = simplify $ mkPol (getPol p1 ++ getPol p2)
   negate = negatePol
   p1 * p2 = simplify $ mkPol (getPol p1 `multPol` getPol p2)
   abs = absPol

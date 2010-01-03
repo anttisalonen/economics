@@ -16,6 +16,12 @@ data CurveComponent = LinearFunction Flt Flt
                     | ExponentialFunction Flt Flt Flt
     deriving (Eq, Show, Read)
 
+simplifyCurve :: Curve -> Curve
+simplifyCurve = correct . foldr go ([], 0, 0)
+  where go (LinearFunction a' b') (acc, a, b) = (acc, a + a', b + b')
+        go c (acc, a, b) = (c:acc, a, b)
+        correct (curves, a, b) = LinearFunction a b : curves
+
 maxCurveValue :: Flt
 maxCurveValue = 1.0e7
 
@@ -79,7 +85,7 @@ balance' x y =
 balance :: Curve -> Curve -> Maybe (Flt, Flt) -- (Quantity, Price)
 balance c1 c2 = balance' (curveToPol c1) (curveToPol c2)
 
-pcp c1 c2 f = polToCurve (f (curveToPol c1) (curveToPol c2))
+pcp c1 c2 f = simplifyCurve $ polToCurve (f (curveToPol c1) (curveToPol c2))
 
 instance Num Curve where
   c1 + c2 = pcp c1 c2 (+)
