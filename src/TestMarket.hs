@@ -27,6 +27,7 @@ pfBeef    = P.CobbDouglas 1 0.25 0.25
 pfMutton  = P.CobbDouglas 1 0.25 0.25
 pfLeather = P.CobbDouglas 1 0.25 0.25
 pfWool    = P.CobbDouglas 1 0.25 0.25
+pfLabor   = P.Constant 3000
 
 {-
 pfRice = P.Complement 1 0
@@ -53,7 +54,7 @@ productionmap = E.fromSeq
   ,("Mutton",   ProductionInfo pfMutton  "Labor" "Sheep"   1 0.1)
   ,("Leather",  ProductionInfo pfLeather "Labor" "Cow"     1 0.1)
   ,("Wool",     ProductionInfo pfWool    "Labor" "Sheep"   1 0.1)
-  ,("Labor",    ProductionInfo pfWool    ""      ""        1 0.1)
+  ,("Labor",    ProductionInfo pfLabor   ""      ""        1 0.1)
  ]
 
 ufWelfare = U.CobbDouglas 0.5
