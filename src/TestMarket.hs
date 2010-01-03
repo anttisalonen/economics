@@ -27,7 +27,7 @@ pfBeef    = P.CobbDouglas 1 0.25 0.25
 pfMutton  = P.CobbDouglas 1 0.25 0.25
 pfLeather = P.CobbDouglas 1 0.25 0.25
 pfWool    = P.CobbDouglas 1 0.25 0.25
-pfLabor   = P.Constant 3000
+pfLabor   = P.Constant 30000
 
 {-
 pfRice = P.Complement 1 0
