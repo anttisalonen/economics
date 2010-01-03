@@ -66,6 +66,9 @@ stepEconomy' e =
 regenerate :: Economy -> Economy
 regenerate e = e{marketquantity = E.union (regenerative e) (marketquantity e)}
 
+regProd :: MarketQuantityMap -> ProductionMap
+regProd = fmap (\q -> ProductionInfo (P.Constant q) "" "" 0 0)
+
 -- Updates economy by consuming all consumer goods and production factors.
 -- Available production factors are returned as well.
 stepDemand :: Economy -> (Economy, MarketQuantityMap, MarketQuantityMap)
@@ -118,10 +121,10 @@ produce prods prices supplies pname prod (inp, acc, usedinp) = fromMaybe (inp, a
   let in1 = input1 prodinfo
   let in2 = input2 prodinfo
   let oprice = E.lookupWithDefault maxCurveValue pname prices
-  let ip1 = E.lookupWithDefault maxCurveValue in1 prices
-  let ip2 = E.lookupWithDefault maxCurveValue in2 prices
-  let avail_iq1 = E.lookupWithDefault 0 in1 inp
-  let avail_iq2 = E.lookupWithDefault 0 in2 inp
+  let ip1 = if null in1 then 0 else E.lookupWithDefault maxCurveValue in1 prices
+  let ip2 = if null in2 then 0 else E.lookupWithDefault maxCurveValue in2 prices
+  let avail_iq1 = if null in1 then maxCurveValue else E.lookupWithDefault 0 in1 inp
+  let avail_iq2 = if null in2 then maxCurveValue else E.lookupWithDefault 0 in2 inp
   let wishq = clamp 0 maxCurveValue (productionQuantity scurve oprice)
   let (req_iq1, req_iq2) = P.factors prodfunc ip1 ip2 wishq
   let (real_iq1, real_iq2) = (min req_iq1 avail_iq1, min req_iq2 avail_iq2)
