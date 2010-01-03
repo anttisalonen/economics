@@ -119,7 +119,7 @@ complementProduction :: Flt -> Flt -> Quantity -> Quantity -> Quantity
 complementProduction p a k l = p * (min (k / a) l)
 
 complementMinimizeCost' prod a _ _ q =
-  (if prod * a == 0 then maxCurveValue else q / prod * a, if prod == 0 then maxCurveValue else q / prod)
+  (if prod * a == 0 then maxCurveValue else q / (prod * a), if prod == 0 then maxCurveValue else q / prod)
 
 complementCost :: Flt -> Flt -> Price -> Price -> Quantity -> Price
 complementCost p a r w q =
