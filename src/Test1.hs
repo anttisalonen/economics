@@ -3,6 +3,7 @@ where
 
 import Test.QuickCheck
 
+import QCPolynomial
 import ProductionTest
 import SupplyTest
 import CostTest
@@ -13,6 +14,9 @@ main = do
     let runT s a = putStrLn s >> a
     let check s a = putStr (s ++ ": ") >> quickCheck a
     let test s a = putStr (s ++ ": ") >> (a >> putStrLn "OK")
+
+    runT "Polynomial" $ do
+        check "num" prop_num
 
     runT "Production" $ do
         test  "test72" test72
