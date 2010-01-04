@@ -21,6 +21,28 @@ import MarketTransaction
 import ProductionTree
 import UtilityTree
 
+nthEconomy :: Int -> Economy -> Economy
+nthEconomy n e = nthEconomy' n stepEconomy e
+
+nthEconomy' :: Int -> (Economy -> Economy) -> Economy -> Economy
+nthEconomy' n f e = head . drop n $ iterate f e
+
+showRunningEconomy n m e = mapM_ putStrLn . map showEconomyWithData . take m . drop n $ runEconomyData e
+
+showLatestEconomy :: [Economy] -> String
+showLatestEconomy = showEconomy . last
+
+runEconomyData :: Economy -> [(Economy, MarketQuantityMap, MarketQuantityMap, MarketQuantityMap)]
+runEconomyData e = 
+  let t@(e', consumed, produced, used) = stepEconomy' e
+  in t : runEconomyData e'
+
+runEconomy :: Economy -> [Economy]
+runEconomy e = take 30 $ iterate stepEconomy e
+
+runEconomy' :: Int -> Int -> Economy -> [Economy]
+runEconomy' n m e = take m . drop n $ iterate stepEconomy e
+
 showEconomy :: Economy -> String
 showEconomy e = 
   showMarketInfo (marketquantity e) (marketprice e)

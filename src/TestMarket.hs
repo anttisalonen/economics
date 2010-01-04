@@ -17,8 +17,8 @@ import ProductionTree
 import UtilityTree
 import Market
 
-pfRice    = P.Complement  1 0
-pfWheat   = P.Complement  1 0
+pfRice    = P.Substitute 1 1
+pfWheat   = P.Substitute 1 1
 pfPig     = P.CobbDouglas 1 0.4  0.1
 pfCow     = P.CobbDouglas 1 0.2  0.3
 pfSheep   = P.CobbDouglas 1 0.3  0.2
@@ -28,6 +28,20 @@ pfMutton  = P.CobbDouglas 1 0.25 0.25
 pfLeather = P.CobbDouglas 1 0.25 0.25
 pfWool    = P.CobbDouglas 1 0.25 0.25
 pfLabor   = P.Constant 100
+
+{-
+pfRice    = P.CobbDouglas 1000 0.25 0.25
+pfWheat   = P.CobbDouglas 90000 0.25 0.25
+pfPig     = P.CobbDouglas 1000 0.4  0.1
+pfCow     = P.CobbDouglas 1000 0.2  0.3
+pfSheep   = P.CobbDouglas 1000 0.3  0.2
+pfPork    = P.CobbDouglas 1000 0.25 0.25
+pfBeef    = P.CobbDouglas 1000 0.25 0.25
+pfMutton  = P.CobbDouglas 1000 0.25 0.25
+pfLeather = P.CobbDouglas 100 0.25 0.25
+pfWool    = P.CobbDouglas 100 0.25 0.25
+pfLabor   = P.Constant 100
+-}
 
 {-
 pfRice = P.Complement 1 0
@@ -44,8 +58,8 @@ pfWool = P.CobbDouglas 1 0.25 0.25
 
 productionmap = E.fromSeq 
  [
-   ("Rice",     ProductionInfo pfRice    "" "Labor" 9 0.1)
-  ,("Wheat",    ProductionInfo pfWheat   "" "Labor" 9 0.1)
+   ("Rice",     ProductionInfo pfRice    "Labor" "Labor" 9 0.1)
+  ,("Wheat",    ProductionInfo pfWheat   "Labor" "Labor" 9 0.1)
   ,("Pig",      ProductionInfo pfPig     "Labor" "Wheat"   1 0.1)
   ,("Cow",      ProductionInfo pfCow     "Labor" "Wheat"   1 0.1)
   ,("Sheep",    ProductionInfo pfSheep   "Labor" "Wheat"   1 0.1)
@@ -62,7 +76,7 @@ ufClothing = U.CobbDouglas 0.75
 ufFood = U.CobbDouglas 0.25
 ufVegetables = U.CobbDouglas 0.5
 ufMeat = U.CobbDouglas 0.4
-ufOtherMeat = U.CobbDouglas 0.7
+ufOtherMeat = U.CobbDouglas 0.3
 
 utilitymap = E.fromSeq 
  [
@@ -75,7 +89,7 @@ utilitymap = E.fromSeq
  ]
 
 initialEconomy :: Economy
-initialEconomy = mkEconomy 10 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 100)])
+initialEconomy = mkEconomy 100 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 100)])
 
 utree = 
   NodeR ("Welfare", ufWelfare)
@@ -97,28 +111,6 @@ testprices = E.fromSeq [("Wheat", 3.0), ("Rice", 5.0), ("Pork", 10.0), ("Beef", 
 
 prodprices = E.insert "Labor" 30.0 testprices
 
-nthEconomy :: Int -> Economy
-nthEconomy n = nthEconomy' n stepEconomy
-
-nthEconomy' :: Int -> (Economy -> Economy) -> Economy
-nthEconomy' n f = head . drop n $ iterate f initialEconomy
-
-showRunningEconomy n m = mapM_ putStrLn . map showEconomyWithData . take m . drop n $ runEconomyData initialEconomy
-
-showLatestEconomy :: [Economy] -> String
-showLatestEconomy = showEconomy . last
-
-runEconomyData :: Economy -> [(Economy, MarketQuantityMap, MarketQuantityMap, MarketQuantityMap)]
-runEconomyData e = 
-  let t@(e', consumed, produced, used) = stepEconomy' e
-  in t : runEconomyData e'
-
-runEconomy :: [Economy]
-runEconomy = take 30 $ iterate stepEconomy initialEconomy
-
-runEconomy' :: Int -> Int -> [Economy]
-runEconomy' n m = take m . drop n $ iterate stepEconomy initialEconomy
-
 testUtree = do
   let w = weightAllocation utree
   let b = budgetAllocation 100 utree
@@ -126,7 +118,7 @@ testUtree = do
   assertBool ("Budget allocation: " ++ show b) (show b == "fromList [(\"Beef\",0.0),(\"Leather\",0.0),(\"Mutton\",0.0),(\"Pork\",28.125),(\"Rice\",9.375),(\"Wheat\",15.625),(\"Wool\",46.875)]")
   assertBool ("Building utility tree: " ++ show utree) (utree == buildUtilityTree "Welfare" utilitymap testprices)
 
-e = nthEconomy 10
+e = nthEconomy 10 initialEconomy
 prices = marketprice e
 productions = productioninfo e
 prods = productions
