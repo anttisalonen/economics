@@ -27,7 +27,7 @@ pfBeef    = P.CobbDouglas 1 0.25 0.25
 pfMutton  = P.CobbDouglas 1 0.25 0.25
 pfLeather = P.CobbDouglas 1 0.25 0.25
 pfWool    = P.CobbDouglas 1 0.25 0.25
-pfLabor   = P.CobbDouglas 1 0.25 0.25
+pfLabor   = P.Constant 100
 
 {-
 pfRice = P.Complement 1 0
@@ -98,7 +98,10 @@ testprices = E.fromSeq [("Wheat", 3.0), ("Rice", 5.0), ("Pork", 10.0), ("Beef", 
 prodprices = E.insert "Labor" 30.0 testprices
 
 nthEconomy :: Int -> Economy
-nthEconomy n = head . drop n $ iterate stepEconomy initialEconomy
+nthEconomy n = nthEconomy' n stepEconomy
+
+nthEconomy' :: Int -> (Economy -> Economy) -> Economy
+nthEconomy' n f = head . drop n $ iterate f initialEconomy
 
 showRunningEconomy n m = mapM_ putStrLn . map showEconomyWithData . take m . drop n $ runEconomyData initialEconomy
 
