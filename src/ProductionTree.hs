@@ -28,7 +28,7 @@ addDemand quantities prices prodname prodinfo acc = fromMaybe acc $ do
   let in2 = input2 prodinfo
   let iq1 = E.lookupWithDefault maxCurveValue in1 quantities
   let iq2 = E.lookupWithDefault maxCurveValue in2 quantities
-  op <- E.lookupM prodname prices
+  let op = E.lookupWithDefault 0 prodname prices
   let prodfunc = productionfunction prodinfo
   let (c1, c2) = marginalRevenue prodfunc iq1 iq2 
   return $ 

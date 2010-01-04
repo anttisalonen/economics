@@ -58,7 +58,7 @@ stepEconomy e = let (e', _, _, _) = stepEconomy' e in e'
 
 stepEconomy' :: Economy -> (Economy, MarketQuantityMap, MarketQuantityMap, MarketQuantityMap)
 stepEconomy' e = 
-  let (e', inputs, consumed) = stepDemand (regenerate e)
+  let (e', inputs, consumed) = stepDemand (stepPrices $ regenerate e)
       (e'', produced, usedinputs) = stepProd inputs e'
   in (stepPrices e'', consumed, produced, usedinputs)
 
@@ -104,19 +104,20 @@ stepProd q e = let (rest, produced, usedinputs) = stepProd' (productioninfo e) (
 -- Returns (unused inputs, produced goods).
 stepProd' :: ProductionMap -> MarketPriceMap -> MarketQuantityMap -> (MarketQuantityMap, MarketQuantityMap, MarketQuantityMap)
 stepProd' prods prices inputs = 
-  E.foldrWithKey' (produce prods prices supplies) (inputs, E.empty, E.empty) prods
+  E.foldrWithKey' (produce prices supplies) (inputs, E.empty, E.empty) prods
       where supplies = buildProductMap $ concatMap (uncurry (mkSupply prices)) (E.toSeq prods)
 
-produce :: ProductionMap 
-        -> MarketPriceMap 
+marketSupplies :: Economy -> MarketSupplyMap
+marketSupplies e = buildProductMap $ concatMap (uncurry (mkSupply (marketprice e))) (E.toSeq (productioninfo e))
+
+produce :: MarketPriceMap 
         -> MarketSupplyMap 
         -> ProductName 
         -> ProductionInfo 
         -> (MarketQuantityMap, MarketQuantityMap, MarketQuantityMap) 
         -> (MarketQuantityMap, MarketQuantityMap, MarketQuantityMap)
-produce prods prices supplies pname prod (inp, acc, usedinp) = fromMaybe (inp, acc, usedinp) $ do
+produce prices supplies pname prodinfo (inp, acc, usedinp) = fromMaybe (inp, acc, usedinp) $ do
   scurve <- E.lookupM pname supplies
-  prodinfo <- E.lookupM pname prods
   let prodfunc = productionfunction prodinfo
   let in1 = input1 prodinfo
   let in2 = input2 prodinfo
@@ -129,19 +130,32 @@ produce prods prices supplies pname prod (inp, acc, usedinp) = fromMaybe (inp, a
   let (req_iq1, req_iq2) = P.factors prodfunc ip1 ip2 wishq
   let (real_iq1, real_iq2) = (min req_iq1 avail_iq1, min req_iq2 avail_iq2)
   let prodq = P.production prodfunc real_iq1 real_iq2
-  let acc' = E.insertWith (+) pname prodq acc
-  let restinputs = E.adjust (subtract real_iq1) in1 (E.adjust (subtract real_iq2) in2 inp)
-  let usedinputs = E.insertWith (+) in1 real_iq1 (E.insertWith (+) in2 real_iq2 usedinp)
-  return (restinputs, acc', usedinputs)
+  if prodq == 0 || null in1 && null in2
+    then Nothing
+    else do
+      let acc' = E.insertWith (+) pname prodq acc
+      let restinputs = E.adjust (subtract real_iq1) in1 (E.adjust (subtract real_iq2) in2 inp)
+      let usedinputs = E.insertWith (+) in1 real_iq1 (E.insertWith (+) in2 real_iq2 usedinp)
+      return (restinputs, acc', usedinputs)
 
 stepPrices :: Economy -> Economy
 stepPrices e = e{marketprice = stepPrices' (utilityinfo e) (marketquantity e) (productioninfo e) (marketprice e) (budget e)}
 
 stepPrices' :: UtilityMap -> MarketQuantityMap -> ProductionMap -> MarketPriceMap -> Price -> MarketPriceMap
 stepPrices' utilities quantities productions prices i =
-  E.foldrWithKey' (setPrice demands) prices quantities
-   where demands = E.unionWith (+) consdemands inpdemands
-         consdemands = buildProductMap $ concatMap (mkDemand prices i) (E.elements utilities)
+  E.foldrWithKey' (setPrice (marketDemands' utilities quantities productions prices i)) prices quantities
+
+setSpecificPrice :: ProductName -> Economy -> Economy
+setSpecificPrice pn e = e{marketprice = 
+            setPrice (marketDemands e)
+                     pn (E.lookupWithDefault 0 pn (marketquantity e)) (marketprice e)}
+
+marketDemands :: Economy -> MarketDemandMap
+marketDemands e = marketDemands' (utilityinfo e) (marketquantity e) (productioninfo e) (marketprice e) (budget e)
+
+marketDemands' :: UtilityMap -> MarketQuantityMap -> ProductionMap -> MarketPriceMap -> Price -> MarketDemandMap
+marketDemands' utilities quantities productions prices i = E.unionWith (+) consdemands inpdemands
+   where consdemands = buildProductMap $ concatMap (mkDemand prices i) (E.elements utilities)
          inpdemands = productionInputDemands productions quantities prices
 
 setPrice :: MarketDemandMap -> ProductName -> Quantity -> MarketPriceMap -> MarketPriceMap

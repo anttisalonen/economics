@@ -27,7 +27,7 @@ pfBeef    = P.CobbDouglas 1 0.25 0.25
 pfMutton  = P.CobbDouglas 1 0.25 0.25
 pfLeather = P.CobbDouglas 1 0.25 0.25
 pfWool    = P.CobbDouglas 1 0.25 0.25
-pfLabor   = P.Constant 100
+pfLabor   = P.CobbDouglas 1 0.25 0.25
 
 {-
 pfRice = P.Complement 1 0
@@ -75,7 +75,7 @@ utilitymap = E.fromSeq
  ]
 
 initialEconomy :: Economy
-initialEconomy = mkEconomy 10 productionmap utilitymap "Welfare" (E.fromSeq [])
+initialEconomy = mkEconomy 10 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 100)])
 
 utree = 
   NodeR ("Welfare", ufWelfare)
