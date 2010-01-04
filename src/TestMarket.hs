@@ -27,7 +27,7 @@ pfBeef    = P.CobbDouglas 1 0.25 0.25
 pfMutton  = P.CobbDouglas 1 0.25 0.25
 pfLeather = P.CobbDouglas 1 0.25 0.25
 pfWool    = P.CobbDouglas 1 0.25 0.25
-pfLabor   = P.Constant 30000
+pfLabor   = P.Constant 100
 
 {-
 pfRice = P.Complement 1 0
@@ -75,7 +75,7 @@ utilitymap = E.fromSeq
  ]
 
 initialEconomy :: Economy
-initialEconomy = mkEconomy 100 productionmap utilitymap "Welfare" (E.fromSeq [("Labor", 30000)])
+initialEconomy = mkEconomy 10 productionmap utilitymap "Welfare" (E.fromSeq [])
 
 utree = 
   NodeR ("Welfare", ufWelfare)
@@ -123,12 +123,12 @@ testUtree = do
   assertBool ("Budget allocation: " ++ show b) (show b == "fromList [(\"Beef\",0.0),(\"Leather\",0.0),(\"Mutton\",0.0),(\"Pork\",28.125),(\"Rice\",9.375),(\"Wheat\",15.625),(\"Wool\",46.875)]")
   assertBool ("Building utility tree: " ++ show utree) (utree == buildUtilityTree "Welfare" utilitymap testprices)
 
-e = nthEconomy 200
+e = nthEconomy 10
 prices = marketprice e
 productions = productioninfo e
 prods = productions
 quantities = marketquantity e
-p = E.lookup "Pork" prods
+p = E.lookup "Labor" prods
 curve = marginalCosts' (productionfunction p) (E.lookup (input1 p) prices) (E.lookup (input2 p) prices)
 pf = productionfunction p
 ip1 = E.lookup (input1 p) prices
@@ -140,8 +140,8 @@ i = budget e
 consdemands = buildProductMap $ concatMap (mkDemand prices i) (E.elements utilities)
 inpdemands = productionInputDemands productions quantities prices
 demands = E.unionWith (+) consdemands inpdemands
-s1 = E.lookup "Pork" supplies
-d1 = E.lookup "Pork" demands
+s1 = E.lookup "Labor" supplies
+d1 = E.lookup "Labor" demands
 sup n = E.lookup n supplies
 dem n = E.lookup n demands
 balanceGood n = balance (E.lookup n supplies) (E.lookup n demands)
