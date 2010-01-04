@@ -29,33 +29,6 @@ pfLeather = P.CobbDouglas 1 0.25 0.25
 pfWool    = P.CobbDouglas 1 0.25 0.25
 pfLabor   = P.Constant 100
 
-{-
-pfRice    = P.CobbDouglas 1000 0.25 0.25
-pfWheat   = P.CobbDouglas 90000 0.25 0.25
-pfPig     = P.CobbDouglas 1000 0.4  0.1
-pfCow     = P.CobbDouglas 1000 0.2  0.3
-pfSheep   = P.CobbDouglas 1000 0.3  0.2
-pfPork    = P.CobbDouglas 1000 0.25 0.25
-pfBeef    = P.CobbDouglas 1000 0.25 0.25
-pfMutton  = P.CobbDouglas 1000 0.25 0.25
-pfLeather = P.CobbDouglas 100 0.25 0.25
-pfWool    = P.CobbDouglas 100 0.25 0.25
-pfLabor   = P.Constant 100
--}
-
-{-
-pfRice = P.Complement 1 0
-pfWheat = P.Complement 1 0
-pfPig = P.Complement 1 0.4
-pfCow = P.Complement 1 0.2
-pfSheep = P.Complement 1 0.3
-pfPork = P.Complement 1 3.0
-pfBeef = P.CobbDouglas 1 0.25 0.25
-pfMutton = P.Complement 1 3.0
-pfLeather = P.Substitute 1 1
-pfWool = P.CobbDouglas 1 0.25 0.25
--}
-
 productionmap = E.fromSeq 
  [
    ("Rice",     ProductionInfo pfRice    "Labor" "Labor" 9 0.1)
