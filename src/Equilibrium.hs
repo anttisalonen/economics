@@ -1,6 +1,8 @@
 module Equilibrium
 where
 
+import Data.Maybe (fromMaybe)
+
 import qualified Data.Edison.Assoc.StandardMap as E
 
 import Market
@@ -16,11 +18,8 @@ step1 e =
   in e{marketquantity = qs', marketprice = ps'}
 
 create :: MarketSupplyMap -> ProductName -> DemandCurve -> (MarketQuantityMap, MarketPriceMap) -> (MarketQuantityMap, MarketPriceMap)
-create supplies pname d acc@(accq, accp) =
-  case E.lookupM pname supplies of
-    Nothing -> acc
-    Just s  -> let bal = balance s d
-               in case bal of
-                    Nothing     -> acc
-                    Just (q, p) -> (E.insert pname q accq, E.insert pname p accp)
+create supplies pname d acc@(accq, accp) = fromMaybe acc $ do
+  s <- E.lookupM pname supplies
+  (q, p) <- balance s d
+  return (E.insert pname q accq, E.insert pname p accp)
 
