@@ -8,7 +8,7 @@ import qualified Utility as U
 import MarketTypes
 import MarketHelpers
 
-pfRice    = P.CobbDouglas 10 0.02 0.48
+pfRice    = P.CobbDouglas 10 0.15 0.35
 pfWheat   = P.CobbDouglas 10 0.01 0.49
 pfGrain   = P.CobbDouglas 10 0.79 0.01
 pfPig     = P.CobbDouglas 10 0.4  0.1
@@ -21,14 +21,19 @@ pfLeather = P.CobbDouglas 10 0.25 0.25
 pfWool    = P.CobbDouglas 10 0.25 0.25
 pfBread   = P.CobbDouglas 10 0.25 0.25
 pfLabor   = P.Constant 100
-pfWater   = P.Constant 100000
+pfWater   = P.Constant 800000
 pfMachine = P.CobbDouglas 10 0.4 0.1
 pfIron    = P.CobbDouglas 10 0.4 0.1
 pfIronore = P.Constant 1
+pfGoldJewellery = P.CobbDouglas 10 0.01 0.49
+pfGemJewellery = P.CobbDouglas 10 0.01 0.49
+pfGold    = P.Constant 0.1
+pfGems    = P.Constant 0.01
+pfLiquor  = P.CobbDouglas 10 0.4 0.1
 
 productionmap = E.fromSeq 
  [
-   ("Rice",     ProductionInfo pfRice    "Labor" "Machinery" 9 0.1)
+   ("Rice",     ProductionInfo pfRice    "Labor" "Water" 9 0.1)
   ,("Wheat",    ProductionInfo pfWheat   "Labor" "Machinery" 9 0.1)
   ,("Grain",    ProductionInfo pfGrain   "Machinery" "Wheat" 1 0.1)
   ,("Pig",      ProductionInfo pfPig     "Water" "Wheat"   1 0.1)
@@ -45,23 +50,34 @@ productionmap = E.fromSeq
   ,("Machinery",ProductionInfo pfMachine "Labor" "Iron"    1 0.1)
   ,("Iron",     ProductionInfo pfIron    "Labor" "Iron ore" 1 0.1)
   ,("Iron ore", ProductionInfo pfIronore ""      ""        1 0.1)
+  ,("Gold jewellery", ProductionInfo pfGoldJewellery "Labor" "Gold" 1 0.1)
+  ,("Gem jewellery", ProductionInfo pfGemJewellery "Labor" "Gem stones" 1 0.1)
+  ,("Gold",     ProductionInfo pfGold    ""      "" 1 0.1)
+  ,("Gem stones", ProductionInfo pfGems   ""      "" 1 0.1)
+  ,("Liquor",   ProductionInfo pfLiquor  "Labor" "Wheat" 1 0.1)
  ]
 
-ufWelfare = U.CobbDouglas 0.5
+ufWelfare = U.CobbDouglas 0.9
+ufSurvival = U.CobbDouglas 0.5
 ufClothing = U.CobbDouglas 0.75
 ufFood = U.CobbDouglas 0.25
 ufVegetables = U.CobbDouglas 0.5
 ufMeat = U.CobbDouglas 0.4
 ufOtherMeat = U.CobbDouglas 0.3
+ufLuxury = U.CobbDouglas 0.7
+ufJewellery = U.CobbDouglas 0.5
 
 utilitymap = E.fromSeq 
  [
-   ("Welfare",    UtilityInfo ufWelfare    "Food"       "Clothing")
+   ("Welfare",    UtilityInfo ufWelfare    "Survival"   "Luxury")
+  ,("Survival",   UtilityInfo ufSurvival   "Food"       "Clothing")
   ,("Clothing",   UtilityInfo ufClothing   "Wool"       "Leather")
   ,("Food",       UtilityInfo ufFood       "Vegetables" "Meat")
   ,("Vegetables", UtilityInfo ufVegetables "Bread"      "Rice")
   ,("Meat",       UtilityInfo ufMeat       "Pork"       "OtherMeat")
   ,("OtherMeat",  UtilityInfo ufOtherMeat  "Beef"       "Mutton")
+  ,("Luxuxy",     UtilityInfo ufLuxury     "Jewellery"    "Liquor")
+  ,("Jewellery",    UtilityInfo ufJewellery    "Gem jewellery" "Gold jewellery")
  ]
 
 initialEconomy :: Economy
