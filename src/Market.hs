@@ -66,10 +66,10 @@ showData
 showData initline go xs = intercalate "\n" . S.toList . S.rcons "\n" $ E.foldWithKey' go (S.singleton (initline)) xs
 
 showMarketInfo :: MarketQuantityMap -> MarketPriceMap -> String
-showMarketInfo qs ps = showData (printf "%-21s %-12s %s" "Name" "Quantity" "Price") go qs
+showMarketInfo qs ps = showData (printf "%-32s %-17s %s" "Name" "Quantity" "Price") go qs
   where go :: ProductName -> Quantity -> S.Seq String -> S.Seq String
         go name q prev = let p = E.lookupWithDefault maxCurveValue name ps
-                         in S.rcons (printf "%-20s %9.2f %9.2f" name q p) prev
+                         in S.rcons (printf "%-25s %15.2f %14.2f" name q p) prev
 
 dropThird :: (a, b, c) -> (a, b)
 dropThird (a, b, c) = (a, b)
