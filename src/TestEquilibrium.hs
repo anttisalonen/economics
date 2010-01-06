@@ -76,7 +76,7 @@ utilitymap = E.fromSeq
   ,("Vegetables", UtilityInfo ufVegetables "Bread"      "Rice")
   ,("Meat",       UtilityInfo ufMeat       "Pork"       "OtherMeat")
   ,("OtherMeat",  UtilityInfo ufOtherMeat  "Beef"       "Mutton")
-  ,("Luxuxy",     UtilityInfo ufLuxury     "Jewellery"    "Liquor")
+  ,("Luxury",     UtilityInfo ufLuxury     "Jewellery"    "Liquor")
   ,("Jewellery",    UtilityInfo ufJewellery    "Gem jewellery" "Gold jewellery")
  ]
 
